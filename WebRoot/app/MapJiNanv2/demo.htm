@@ -1,0 +1,91 @@
+<style type="text/css">
+<!--
+.pnlSuggest
+{
+ border:1px dashed #7f9db9;border-top:0;background-color:#fff;
+  z-index: 9527;
+ position: absolute;
+ overflow: hidden;
+ text-overflow: clip;
+}
+
+.pnlSuggest table
+{
+ width: 100%;font-size:12px;
+}
+
+.pnlSuggest tr
+{
+ width: 100%;font-size:12px;
+}
+
+
+.trmouseover
+{
+    width: 100%;
+ background-color: #edf2fb;
+}
+
+.trmouseover td
+{
+    width: 100%;
+ text-align: left;
+ overflow: hidden;
+ text-overflow: clip;
+ background-color: #edf2fb;
+}
+
+.trmouseout
+{
+    width: 100%;
+ background-color: #FFFFFF;
+}
+
+.trmouseout td
+{
+    width: 100%;
+ text-align: left;
+ overflow: hidden;
+ text-overflow: clip;
+ background-color: #FFFFFF;
+}
+
+.ddlDataSource
+{
+    display: none;
+}
+-->
+</style>
+<SCRIPT LANGUAGE="JavaScript" src="js/SelectHitEdit.js"></SCRIPT>
+<script language="javascript">
+	//★★★★★★★★★★★★★★★★★★★★
+	//liststr即预选的搜索内容，此值可以从任何地方获取，包括数据库，每个值之间可以用任何分隔符分隔，本文用','分隔(即strsplit）
+	
+	var liststr="a,ab,abc,abcd";
+	var strsplit = "," ;
+	var lists=liststr.split(strsplit);
+</script>
+<!--初始化页面，'txtInput'为输入框的id值，'txtInputSelect'为选择列表的id值，可以改为自己的-->
+<body onLoad="initPage('txtInput','txtInputSelect');">
+<div align="center">
+	<b>仿google、百度搜索框，下拉提示的功能。并增加了，可选择下拉列表<br/>测试的预选搜索内容为a、ab、abc、abcd</b>
+	<br/>
+					<!--选择列表-->
+					<select name="select" id="txtInputSelect" onChange="document.getElementById('txtInput').value=this.value;" 
+						 sonfocus="document.getElementById('txtInput').value=this.value;">
+             <option value="">请选择</option>
+            	<script language="javascript">
+             	for(var i=0;i<lists.length;i++){
+             		document.write("<option value=\""+lists[i]+"\">"+lists[i]+"</option>");
+             	}
+             </script>
+
+            </select>
+            <!--关键字输入框，其中ShowSuggest函数的第一个值为输入框对象；'h6'为下拉提示显示窗口的元素卷标名称；
+            liststr为预选的搜索内容，关键字将在这些值里匹配；strsplit是预选搜索内容的分隔符,本文用','分隔 -->
+					请输入关键字：<input type="text" id="txtInput" name="inputname" onKeyDown="ShowSuggest(this,'h6',liststr,strsplit);" />
+              <h6 style="display: none;" ></h6>
+
+</div>
+ 						
+</body>

@@ -1,0 +1,22 @@
+@CHARSET "UTF-8";
+#container{
+	width : 100%;
+	height:100%;
+	left:0px; 
+	top:0px;
+}
+
+#chartformdiv{
+	height:1%; 
+	width:50%;
+	font-size:13px;
+	font-family:'宋体';
+	line-height:1%; 
+	position:absolute;
+	filter = alpha(opacity=80);
+	-moz-opacity:0.80; /*支持 FireFox 浏览器*/
+	opacity:0.80;  /*支持 Chrome, Opera, Safari 等浏览器*/
+	left:0px; 
+	top:0px; 
+	background:#ffffff;
+}

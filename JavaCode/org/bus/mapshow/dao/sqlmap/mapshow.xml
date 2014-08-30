@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="MapShow">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo"
+		type="org.g4studio.system.admin.web.tag.vo.UserVo" />
+
+
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" mode="OUT" resultMap="cur_dto" />
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR" />
+		<result column="fyze" property="fyze" jdbcType="DECIMAL" />
+	</resultMap>
+	<procedure id="g4_prc_cursor_demo" parameterMap="prcdto_cur">{call
+		g4_prc_cursor_demo(?,?,?,?)}</procedure>
+
+	<select id="queryteamDatas" parameterClass="map" resultClass="dto">
+		SELECT deptid as value, deptname as text
+		FROM eadept t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				t.PARENTID = $deptid$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="queryRoadByName" parameterClass="map" resultClass="dto">
+		SELECT roadname FROM road_info_master r WHERE 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="and roadname LIKE" property="roadname">
+				'%$roadname$%'
+			</isNotEmpty>
+		</dynamic>
+		group by roadname
+	</select>
+
+	<select id="queryRoadDetailByName" parameterClass="map"
+		resultClass="dto">
+		<!-- ,roadname,roadnamejc,direction,lanscount,buslane,tj_route,pic_id -->
+		SELECT id as rid,roadname,baidu_lng as lng,baidu_lat as
+		lat,detail_id,route_count,zoulang FROM road_chouxi_view
+		where 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="roadname">
+				roadname=#roadname#
+			</isNotEmpty>
+		</dynamic>
+		order by id,detail_id
+	</select>
+
+	<select id="queryRoadInfoImg" parameterClass="map" resultClass="dto">
+		SELECT id as
+		rid,roadname,roadnamejc,direction,lanscount,buslane,route_count,pic_id,baidu_lng
+		as lng,baidu_lat as lat,detail_id,tj_route FROM road_view
+		where 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zoulang">
+				zoulang=#zoulang#
+			</isNotEmpty>
+			and baidu_lat is not null
+			<isNotEmpty prepend="order by abs(baidu_lng-" property="lng">
+				#lng#
+			</isNotEmpty>
+			<isNotEmpty prepend=")+abs(baidu_lat-" property="lat">
+				#lat#
+			</isNotEmpty>
+			) LIMIT 0,1
+		</dynamic>
+
+	</select>
+
+	<select id="queryRoadByCorridor" parameterClass="map"
+		resultClass="dto">
+		SELECT zoulang FROM road_chouxi_view where LENGTH(zoulang)>0 GROUP BY
+		zoulang
+	</select>
+
+	<select id="queryRoadDetailByCorridor" parameterClass="map"
+		resultClass="dto">
+		<!-- ,roadname,roadnamejc,direction,lanscount,buslane,tj_route,pic_id -->
+		SELECT id as rid,roadname,baidu_lng as lng,baidu_lat as
+		lat,detail_id,route_count,zoulang FROM road_chouxi_view
+		where 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="roadname">
+				zoulang=#roadname#
+			</isNotEmpty>
+		</dynamic>
+		order by id,detail_id
+	</select>
+
+	<select id="queryStationNet_0" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as
+		lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as
+		wid,station_len as len,station_type as type,station_pos as pos
+		FROM
+		station_view t
+		<dynamic>
+			order by t.station_name
+		</dynamic>
+	</select>
+
+	<select id="queryStationNet_1" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as
+		lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as
+		wid,station_len as len,station_type as type,station_pos as pos
+		FROM
+		station_view t
+		<dynamic>
+			where t.station_type!=2
+			order by t.station_name
+		</dynamic>
+	</select>
+
+	<select id="queryStationNet_2" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as
+		lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as
+		wid,station_len as len,station_type as type,station_pos as pos
+		FROM
+		station_view t
+		<dynamic>
+			where t.station_type=2
+			order by t.station_name
+		</dynamic>
+	</select>
+
+	<select id="queryStationNet_3" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as
+		lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as
+		wid,station_len as len,station_type as type,station_pos as pos
+		FROM
+		station_view t
+		<dynamic>
+			where t.station_pos='M'
+			order by t.station_name
+		</dynamic>
+	</select>
+
+	<select id="queryStationRouteNet" parameterClass="map"
+		resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as
+		lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as
+		wid,station_len as len,station_type as type,station_pos as pos
+		FROM
+		station_view t where 1=1
+		<dynamic>
+			<isNotEmpty prepend="and" property="sc">
+	             <![CDATA[ t.route_count>#sc#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and " property="bc">
+	            <![CDATA[t.route_count<=#bc#]]>
+			</isNotEmpty>
+			order by t.station_name
+		</dynamic>
+	</select>
+
+	<select id="queryRepeatNetByPos" parameterClass="map"
+		resultClass="dto">
+		<!-- ,roadname,roadnamejc,direction,lanscount,buslane,tj_route,pic_id -->
+		SELECT id as rid,roadname,baidu_lng as lng,baidu_lat as
+		lat,detail_id,route_count FROM road_chouxi_view
+		where 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="and (" property="pos1">
+				upper(direction)=#pos1#
+			</isNotEmpty>
+			<isNotEmpty prepend="or " property="pos2">
+				upper(direction)=#pos2#)
+			</isNotEmpty>
+		</dynamic>
+		order by id,detail_id
+	</select>
+
+	<select id="queryRepeatNetByRouteCount" parameterClass="map" resultClass="dto">
+		<!-- ,roadname,roadnamejc,direction,lanscount,buslane,tj_route,pic_id -->
+		SELECT id as rid,roadname,baidu_lng as lng,baidu_lat as
+		lat,detail_id,route_count FROM road_chouxi_view r
+		where 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="sc">
+	             <![CDATA[ r.route_count>=#sc#]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and " property="bc">
+	            <![CDATA[r.route_count<=#bc#]]>
+			</isNotEmpty>
+		</dynamic>
+		order by id,detail_id
+	</select>
+	
+	<select id="queryBusNetByCompany" parameterClass="map"
+		resultClass="dto">
+		SELECT DISTINCT
+		road as rid,
+		detail_id,
+		roadname,
+		baidu_lng as lng,
+		baidu_lat as lat,
+		route_count
+		FROM route_chouxi_view
+		WHERE ssgs LIKE #ssgs# 
+		and baidu_lat is not null
+		GROUP BY road,detail_id,baidu_lng,baidu_lat,route_count
+		ORDER BY road,detail_id
+	</select>
+
+	<select id="queryBusNetByBRT" parameterClass="map"
+		resultClass="dto">
+		SELECT DISTINCT
+		road as rid,
+		detail_id,
+		roadname,
+		baidu_lng as lng,
+		baidu_lat as lat,
+		route_count
+		FROM route_chouxi_view
+		WHERE UPPER(route_id) LIKE 'BRT%' and baidu_lat is not null
+		GROUP BY road,detail_id,baidu_lng,baidu_lat,route_count
+		ORDER BY road,detail_id
+	</select>
+
+	<select id="querySpecialNet" parameterClass="map" resultClass="dto">
+		<!-- ,roadname,roadnamejc,direction,lanscount,buslane,tj_route,pic_id -->
+		SELECT id as rid,roadname,buslane,baidu_lng as lng,baidu_lat as
+		lat,detail_id,route_count FROM road_chouxi_view r
+		where 1=1 and (buslane=1 or buslane=2)
+		order by id,detail_id
+	</select>
+
+</sqlMap>

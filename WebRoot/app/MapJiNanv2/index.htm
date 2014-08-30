@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>公交线路及站点查询系统登陆</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/admin.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" language="javascript">
+	var liststr;
+	var strsplit = "," ;
+	var lists="";
+	var xmlHttp;
+function createXMLHTTP() 
+{ 
+  if(window.XMLHttpRequest) 
+  { 
+    xmlHttp = new XMLHttpRequest();//Mozilla浏览器 
+  } 
+  else if(window.ActiveXObject) 
+  { 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");//IE老版本 
+    } 
+    catch (e) 
+    { } 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Microsoft.XMLHTTP"); //IE新版本 
+    } 
+    catch (e) 
+    { } 
+    if (!xmlHttp) 
+    { 
+      window.alert("不能创建XMLHttpRequest对象实例!"); 
+      return false; 
+    } 
+  } 
+} 
+
+</script>
+
+<script type="text/javascript" language="javascript">
+function getyhm()
+{
+var name=document.getElementById("name").value;
+var pass=document.getElementById("pass").value;
+    createXMLHTTP();
+    var mycars = new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+        var strjwdd=xmlHttp.responseText;
+        if(strjwdd==1)
+        {
+        window.location.href="index_1.htm";
+        }
+        else
+        {
+        alert("无此用户或用户名密码错误");
+        }
+//         mycars=strjwdd.split("*"); //字符分割 
+        }
+    }
+
+    var url="Read_Data.aspx?id=80&name="+name+"&pass="+pass;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}  
+
+//function getBrowserInfo()
+// {
+// var agent = navigator.userAgent.toLowerCase() ;
+
+// var regStr_ie = /msie [\d.]+;/gi ;
+// var regStr_ff = /firefox\/[\d.]+/gi
+// var regStr_chrome = /chrome\/[\d.]+/gi ;
+// var regStr_saf = /safari\/[\d.]+/gi ;
+// //IE
+// if(agent.indexOf("msie") > 0)
+// {
+// return agent.match(regStr_ie) ;
+// }
+
+// //firefox
+// if(agent.indexOf("firefox") > 0)
+// {
+// return agent.match(regStr_ff) ;
+// }
+
+// //Chrome
+// if(agent.indexOf("chrome") > 0)
+// {
+// return agent.match(regStr_chrome) ;
+// }
+
+// //Safari
+// if(agent.indexOf("safari") > 0 && agent.indexOf("chrome") < 0)
+// {
+// return agent.match(regStr_saf) ;
+// }
+
+// }
+
+
+//function isIE7()
+//{ 
+//var isie=navigator.appName.indexOf("Microsoft") != "-1"?true:false;
+//var browser = getBrowserInfo();
+// var verinfo = (browser+"").replace(/[^0-9.]/ig,"");   
+// if((isie==false)||(verinfo<7))
+// {
+// alert("为保证正常浏览网站，建议使用IE7以上版本浏览器！");
+// } 
+//}
+function isIE7()
+{
+ if(navigator.userAgent.indexOf("MSIE 9.0")<=0)  
+				   {  
+				 	 alert("IE9以下不兼容，推荐使用IE9.0以上版本浏览器");   
+				   }  
+}
+</script>
+
+
+</head>
+<body onload="isIE7();">
+<table height="100%" cellSpacing=0 cellPadding=0 width="100%" bgColor="#002779" 
+border=0>
+  <TR>
+    <TD align="middle">
+      <TABLE cellSpacing=0 cellPadding=0 width=468 border=0>
+        <TR>
+          <TD><IMG height=23 src="images/login_1.jpg" 
+          width=468></TD></TR>
+        <TR>
+          <TD><IMG height=147 src="images/login_2.jpg" 
+            width=468></TD></TR></TABLE>
+      <TABLE cellSpacing=0 cellPadding=0 width=468 bgColor=#ffffff border=0>
+        <TR>
+          <TD width=16><IMG height=122 src="images/login_3.jpg" 
+            width=16></TD>
+          <TD align=middle>
+            <TABLE cellSpacing=0 cellPadding=0 width=230 border=0>
+             <!-- <FORM name=form1>-->
+              <TR height=5>
+                <TD width=5></TD>
+                <TD width=56></TD>
+                <TD></TD></TR>
+              <TR height=36>
+                <TD></TD>
+                <TD>用户名</TD>
+                <TD><INPUT id="name"
+                  style="BORDER-RIGHT: #000000 1px solid; BORDER-TOP: #000000 1px solid; BORDER-LEFT: #000000 1px solid; BORDER-BOTTOM: #000000 1px solid" 
+                  maxLength=30 size=24 value="" name=name></TD></TR>
+              <TR height=36>
+                <TD>&nbsp; </TD>
+                <TD>口　令</TD>
+                <TD><INPUT  id="pass"
+                  style="BORDER-RIGHT: #000000 1px solid; BORDER-TOP: #000000 1px solid; BORDER-LEFT: #000000 1px solid; BORDER-BOTTOM: #000000 1px solid" 
+                  type=password maxLength=30 size=24 value="" 
+                name=pass></TD></TR>
+              <TR height=5>
+                <TD colSpan=3></TD></TR>
+              <TR>
+                <TD>&nbsp;</TD>
+                <TD>&nbsp;</TD>
+                <TD><INPUT type=image height=18 width=70  onclick="getyhm()"
+                  src="images/bt_login.gif"></TD></TR>
+<!--                  </FORM>-->
+                  </TABLE></TD>
+          <TD width=16><IMG height=122 src="images/login_4.jpg" 
+            width=16></TD></TR></TABLE>
+      <TABLE cellSpacing=0 cellPadding=0 width=468 border=0>
+        <TR>
+          <TD><IMG height=16 src="images/login_5.jpg" 
+          width=468></TD></TR></TABLE>
+      <TABLE cellSpacing=0 cellPadding=0 width=468 border=0>
+        <TR>
+          <TD align=right></TD></TR></TABLE></TD></TR></TABLE></body>
+          </html>

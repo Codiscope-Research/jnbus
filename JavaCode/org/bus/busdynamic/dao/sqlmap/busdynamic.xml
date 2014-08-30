@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BusDynamic">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo"
+		type="org.g4studio.system.admin.web.tag.vo.UserVo" />
+
+
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" mode="OUT" resultMap="cur_dto" />
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR" />
+		<result column="fyze" property="fyze" jdbcType="DECIMAL" />
+	</resultMap>
+	<procedure id="g4_prc_cursor_demo" parameterMap="prcdto_cur">{call
+		g4_prc_cursor_demo(?,?,?,?)}</procedure>
+
+	<select id="queryteamDatas" parameterClass="map" resultClass="dto">
+		SELECT deptid as value, deptname as text
+		FROM eadept t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				t.PARENTID = $deptid$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="queryBusBanciExcuteDynamicTable" parameterClass="map" resultClass="dto">
+		SELECT
+  rowid,
+  '11'         AS routeid,
+  productid,
+  DATE_FORMAT(DATE,'%Y-%m-%d') AS DATE,
+  TIME_FORMAT(TIME,'%H:%i:%s') AS TIME,
+  startstation,
+  CONCAT(CONVERT(startstation,CHAR),CONVERT('-',CHAR),CONVERT( (SELECT station_name FROM route_station_view WHERE route_id='11' AND station_id_double=startstation) ,CHAR)) AS STARTS,
+  endstation,
+  CONCAT( CONVERT(endstation,CHAR), CONVERT('-',CHAR), CONVERT( (SELECT station_name FROM route_station_view WHERE route_id='11' AND station_id_double=endstation) ,CHAR) ) AS ENDS,
+  upordown,
+  isQuJian
+FROM $tb_banci_table$ t<!-- 数据库表应该是当前月份的表$tb_banci_table$ --> 
+WHERE t.date = substr(now(),1,10)<!-- 时间应该取substr(now(),1,10) -->
+    AND t.routeid = (SELECT
+                       routeid
+                     FROM meta_dept_route
+                     WHERE routename = #routeid#)
+                     AND (t.error = '0'
+          OR t.error = '3')
+          	<dynamic prepend="">
+				<isNotEmpty prepend="and" property="maxrowid">
+					t.rowid > #maxrowid#
+				</isNotEmpty>
+			</dynamic>
+ORDER BY TIME desc;
+	</select>
+	
+	<select id="queryBusBanciTrailDynamic" parameterClass="map" resultClass="dto">
+	SELECT
+  m.Route,
+  m.position,
+  m.PRODUCTID,
+  TIME_TO_SEC(SUBSTR(m.Endtime,12,8)) AS TIME,SUBSTR(m.Endtime,12,8) as timed
+FROM meta_site_route m
+WHERE m.Route = #route_id# and (m.position between #time1# and #time2#)
+    AND (SUBSTR(m.Endtime,1,10) = '2014-03-26'
+          OR SUBSTR(m.StartTime,1,10) = '2014-03-26')
+    AND SUBSTR(m.Endtime,12,8)BETWEEN SEC_TO_TIME(TIME_TO_SEC(DATE_FORMAT(NOW(),'%h:%i:%s')) - TIME_TO_SEC(STR_TO_DATE('01:00:00','%h:%i:%s')))
+    AND DATE_FORMAT(NOW(),'%h:%i:%s')
+	</select>
+	
+	<select id="queryBusBanciTrailDynamic_list_station_num" parameterClass="map" resultClass="dto">
+	SELECT station_count,sxx FROM route_master r WHERE r.route_id=#route_id#
+	</select>
+	
+	<!-- 查询各路线的高峰时间段 -->
+	<select id="queryBusBanciExcuteDuring" parameterClass="map" resultClass="dto">
+	SELECT c AS gf, m_start AS STime,m_end AS ETime
+	FROM plan2_month p
+	WHERE route_id = #routeId# 
+	AND p.date = #date#
+	
+	</select>
+	
+	
+	<!-- 查询各路线某时间段的瞬时值 -->
+	<select id="queryBusBanciExcuteDynamicNum" parameterClass="map" resultClass="java.lang.Integer">
+
+	SELECT COUNT(t.routeid)
+	FROM tb_banci_20140818 t
+	WHERE t.date = cast(#date# as date) and t.routeid = #routeId#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="startTime">
+				 t.time between cast(#startTime# as time) 
+			</isNotEmpty>
+		
+			<isNotEmpty prepend="and" property="endTime">
+				  cast(#endTime# as time) 
+			</isNotEmpty>
+		</dynamic>
+	
+	</select>
+	
+	<!-- 查询线路的早低峰值 -->
+	<select id="queryBusBanciExcuteZDWCNum" parameterClass="map" resultClass="java.lang.Integer">
+
+	SELECT IFNULL(ZD_WC,0) AS zdn
+	FROM bancitj_month_route b
+	WHERE b.routeid = #routeId#
+	AND DATE = #date# LIMIT 0,1
+	<dynamic prepend="">
+		<isNotEmpty prepend="" property="">
+		
+		</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	<!-- 查询线路的早高峰值 -->
+	<select id="queryBusBanciExcuteZGWCNum" parameterClass="map" resultClass="java.lang.Integer">
+
+		SELECT IFNULL(zgwc,0) AS zgn
+	FROM bancitj_month_route b
+	WHERE b.routeid = #routeId#
+	AND b.date = #date# LIMIT 0,1
+	<dynamic prepend="">
+		<isNotEmpty prepend="" property="">
+			
+		</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	<!-- 查询线路的上午平峰值 -->
+	<select id="queryBusBanciExcuteSWPWCNum" parameterClass="map" resultClass="java.lang.Integer">
+
+	SELECT IFNULL(SWPF_WC,0) AS spn
+	FROM bancitj_month_route b
+	WHERE b.routeid = #routeId#
+	AND b.date = #date# LIMIT 0,1
+	<dynamic prepend="">
+		<isNotEmpty prepend="" property="">
+			
+		</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	
+	<!-- 查询线路的下午平峰值 -->
+	<select id="queryBusBanciExcuteXWPWCNum" parameterClass="map" resultClass="java.lang.Integer">
+
+	SELECT IFNULL(XWPF_WC,0) AS xpn
+	FROM bancitj_month_route b
+	WHERE b.routeid = #routeId#
+	AND b.date = #date# LIMIT 0,1
+	<dynamic prepend="">
+		<isNotEmpty prepend="" property="">
+			
+		</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	<!-- 查询线路的晚高峰值 -->
+	<select id="queryBusBanciExcuteWGWCNum" parameterClass="map" resultClass="java.lang.Integer">
+
+	SELECT IFNULL(wgwc,0) AS wgn
+	FROM bancitj_month_route b
+	WHERE b.routeid = #routeId#
+	AND b.date = #date# LIMIT 0,1
+	<dynamic prepend="">
+		<isNotEmpty prepend="" property="">
+			
+		</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	
+	<!-- 查询线路的晚低峰值 -->
+	<select id="queryBusBanciExcuteWDWCNum" parameterClass="map" resultClass="java.lang.Integer">
+
+	SELECT IFNULL(WD_WC,0) AS wdn
+	FROM bancitj_month_route b
+	WHERE b.routeid = #routeId#
+	AND b.date = #date# LIMIT 0,1
+	<dynamic prepend="">
+		<isNotEmpty prepend="" property="">
+			
+		</isNotEmpty>
+	</dynamic>
+	
+	</select>
+	
+	
+	
+	<select id="queryloginusersdeptid" parameterClass="map"
+		resultClass="dto">
+		SELECT deptid FROM eauser e WHERE e.USERID=#loginuserid#
+	</select>
+
+
+	<select id="queryCompanyDatasByClass" parameterClass="map"
+		resultClass="dto">
+		SELECT DEPTID as value, DEPTNAME as text
+		FROM eadept t where 1=1 and
+		t.enabled='1'
+		<dynamic>
+
+			<isNotEmpty prepend="and" property="deptid">
+				DEPTID = substr(#deptid#,1,6)
+			</isNotEmpty>
+			
+		</dynamic>
+	</select>
+	
+	<!-- 查询线路数目 -->
+	<select id="queryRouteDatas" parameterClass="map" resultClass="dto">
+		SELECT routeid AS VALUE,routename AS TEXT
+		FROM meta_dept_route t
+		WHERE 1=1
+		
+		<dynamic>
+			<isNotEmpty prepend="and" property="teamname">
+				teamname = $teamname$
+			</isNotEmpty>
+			
+		</dynamic>
+		
+	</select>
+	
+</sqlMap>

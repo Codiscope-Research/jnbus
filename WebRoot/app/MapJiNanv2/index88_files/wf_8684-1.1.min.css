@@ -1,0 +1,147 @@
+.wf_calendar {
+	background: rgb(255, 255, 255); padding: 0px 10px; border: 1px solid rgb(133, 190, 229);
+}
+.wf_calendar table {
+	text-align: center; font-size: 12px; border-collapse: collapse;
+}
+.wf_calendar caption {
+	color: rgb(102, 102, 102); padding-bottom: 4px; font-weight: bold; border-bottom-color: rgb(228, 228, 227); border-bottom-width: 1px; border-bottom-style: solid;
+}
+.wf_calendar th {
+	padding: 6px 0px 4px; font-weight: normal;
+}
+.wf_calendar th:last-child {
+	font-weight: bold;
+}
+.wf_calendar th:nth-child(1) {
+	font-weight: bold;
+}
+.wf_calendar td {
+	padding: 4px; border: 1px solid rgb(228, 228, 227); font-weight: bold;
+}
+.wf_calendar .wf_today {
+	background: rgb(208, 228, 237);
+}
+.wf_calendar .wf_calendarDate {
+	color: rgb(220, 220, 224); cursor: pointer;
+}
+.wf_calendar .wf_calendarMonthBox {
+	float: left;
+}
+.wf_calendar .wf_calendarLeftBt {
+	background: url("../images/wf_8684-1.1.gif") no-repeat -10px -8px; margin: 80px 0px 0px; width: 20px; height: 38px; text-indent: -999px; overflow: hidden; float: left; cursor: pointer;
+}
+.wf_calendar .wf_calendarRightBt {
+	background: url("../images/wf_8684-1.1.gif") no-repeat -10px -8px; margin: 80px 0px 0px; width: 20px; height: 38px; text-indent: -999px; overflow: hidden; float: left; cursor: pointer;
+}
+.wf_calendar .wf_calendarRightBt {
+	background-position: -34px -8px;
+}
+.wf_calendar .wf_calendarMonth {
+	padding: 12px 8px; clear: right; float: left;
+}
+.wf_calendar .wf_available {
+	color: rgb(51, 51, 51);
+}
+.wf_calendar .wf_active {
+	background-color: rgb(255, 247, 217);
+}
+.wf_calendar .wf_active:hover {
+	color: rgb(255, 255, 255); background-color: rgb(226, 173, 68);
+}
+.wf_calendar .wf_through {
+	background-color: rgb(217, 242, 255);
+}
+.wf_calendar .wf_festival {
+	color: rgb(255, 102, 0); padding-right: 0px; padding-left: 0px; font-size: 10px; font-weight: normal; -webkit-text-size-adjust: none;
+}
+.wf_calendar .wf_selected {
+	color: rgb(255, 255, 255); background-color: rgb(87, 146, 220);
+}
+.wf_alertBox {
+	background: rgb(252, 252, 252); border: 1px solid rgb(198, 198, 198); box-shadow: 1px 1px 1px #ccc;
+}
+.wf_alertBox .wf_boxTitle {
+	background: rgb(242, 242, 242); margin: 1px; padding: 10px 20px; text-align: center; color: rgb(51, 51, 51); position: relative;
+}
+.wf_alertBox .wf_boxContent {
+	padding: 10px 20px 14px;
+}
+.wf_alertBox .wf_boxButtons {
+	padding: 2px 24px 10px; text-align: center; white-space: nowrap;
+}
+.wf_alertBox .wf_boxButtons input {
+	background: rgb(153, 153, 153); margin: 0px 4px; padding: 4px 12px; border-radius: 8px; border: currentColor; color: rgb(255, 255, 255); cursor: pointer;
+}
+.wf_alertBox .wf_boxButtons input:hover {
+	background: rgb(50, 101, 151);
+}
+.wf_smallBox {
+	background: rgb(255, 255, 255); border-radius: 5px; border: 5px solid rgb(242, 242, 242);
+}
+.wf_smallBox .wf_boxContent {
+	padding: 8px 10px; text-align: center;
+}
+.wf_smallBox .wf_boxButtons {
+	padding: 2px 24px 10px; text-align: center; white-space: nowrap;
+}
+.wf_smallBox .wf_boxButtons input {
+	background: rgb(255, 102, 0); margin: 0px 4px; padding: 4px 12px; border-radius: 8px; border: currentColor; color: rgb(255, 255, 255); cursor: pointer;
+}
+.wf_smallBox .wf_boxButtons input:hover {
+	background: rgb(50, 101, 151);
+}
+.wf_normalBox {
+	background: rgb(252, 252, 252); border: 1px solid rgb(198, 198, 198); box-shadow: 1px 1px 1px #ccc;
+}
+.wf_normalBox .wf_boxTitle {
+	background: rgb(242, 242, 242); margin: 1px; padding: 10px; color: rgb(51, 51, 51); position: relative;
+}
+.wf_normalBox .wf_boxTitleContent {
+	padding-right: 20px;
+}
+.wf_normalBox .wf_boxTitleCloseBt {
+	top: 2px; right: 8px; font-size: 20px; position: absolute; cursor: pointer;
+}
+.wf_normalBox .wf_boxContent {
+	padding: 10px 20px 14px;
+}
+.wf_normalBox .wf_boxButtons {
+	padding: 2px 24px 10px; text-align: center; white-space: nowrap;
+}
+.wf_normalBox .wf_boxButtons input {
+	background: rgb(255, 102, 0); margin: 0px 4px; padding: 4px 12px; border-radius: 8px; border: currentColor; color: rgb(255, 255, 255); cursor: pointer;
+}
+.wf_normalBox .wf_boxButtons input:hover {
+	background: rgb(50, 101, 151);
+}
+.wf_gotoTopBt {
+	background: url("../images/wf_8684-1.1.gif") no-repeat -9px -52px; width: 46px; height: 46px; overflow: hidden; cursor: pointer;
+}
+.wf_SelectUI {
+	background: url("../images/wf_8684-1.1.gif") no-repeat -9px -103px; padding: 0px 28px 0px 6px; width: 46px; height: 28px; line-height: 28px; position: relative;
+}
+.wf_SelectUICurrent.wf_SelectUI {
+	
+}
+.wf_SelectUIButton {
+	background: url("../images/wf_8684-1.1.gif") no-repeat -209px -103px; top: 0px; width: 23px; height: 28px; right: 0px; position: absolute; cursor: pointer;
+}
+.wf_SelectUICurrent.wf_SelectUIButton {
+	
+}
+.wf_SelectUIOutbox {
+	background: rgb(255, 255, 255); border: 1px solid rgb(227, 232, 236);
+}
+.wf_SelectUIOutbox li {
+	padding: 4px 6px;
+}
+.wf_SelectUIOutbox li:hover {
+	background: rgb(175, 213, 249); color: rgb(255, 255, 255); cursor: pointer;
+}
+.wf_SelectUIOutbox li.wf_SelectUICurrent {
+	background: rgb(175, 213, 249); color: rgb(255, 255, 255); cursor: pointer;
+}
+.wf_SelectUIInput {
+	border: currentColor;
+}

@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+<struts-config>
+	<!-- 配置ActionFormBean -->
+	<form-beans> 
+		<!-- 公共Form -->  
+		<form-bean name="commonActionForm" type="org.g4studio.core.web.CommonActionForm" />  
+	</form-beans>
+
+	<!-- Action映射 -->
+	<action-mappings type="org.g4studio.core.mvc.xstruts.action.ActionMapping"> 
+	
+		<!-- 登录页面 -->
+		<action name="commonActionForm" path="/login" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.LoginAction">
+			<forward name="loginView" path="/login.jsp" /> 
+		</action>  
+		 
+		<!-- 首页 -->
+		<action name="commonActionForm" path="/index" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.IndexAction">
+			<forward name="indexView" path="/index.jsp" /> 
+			<forward name="desktopView" path="/desktop.jsp" />
+			<forward name="welcomeView" path="/system/admin/welcome.jsp" /> 
+		</action> 
+		
+		<!-- 资源管理 -->
+		<action name="commonActionForm" path="/resource" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.ResourceAction">
+			<forward name="manageMenuResourceView" path="/system/admin/manageMenuResource.jsp" />
+			<forward name="codeTableView" path="/system/admin/manageCodeTable.jsp" /> 
+			<forward name="manageIconView" path="/system/admin/manageIcon.jsp" />
+		</action> 
+		
+		<!-- 组织机构管理 -->
+		<action name="commonActionForm" path="/organization" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.OrganizationAction">
+			<forward name="manageDepartmentView" path="/system/admin/manageDepartment.jsp" />
+		</action>  
+		  
+		<!-- 角色管理与授权 -->
+		<action name="commonActionForm" path="/role" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.RoleAction">
+			<forward name="manageRoleView" path="/system/admin/manageRole.jsp" />
+			<forward name="operatorTabView" path="/system/admin/operatorTab.jsp" />
+			<forward name="selectUserTabView" path="/system/admin/selectUserTab.jsp" />
+			<forward name="managerTabView" path="/system/admin/managerTab.jsp" />
+		</action> 
+		
+		<!-- 人员管理与授权 -->
+		<action name="commonActionForm" path="/user" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.UserAction">
+			<forward name="manageUserView" path="/system/admin/manageUser.jsp" />
+			<forward name="selectRoleTreeView" path="/system/admin/selectRoleTree.jsp" />
+			<forward name="selectMenuTreeView" path="/system/admin/selectMenuTree.jsp" />
+		</action>  
+		
+		<!-- 全局参数表管理 -->
+		<action name="commonActionForm" path="/param" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.ParamAction">
+			<forward name="manageParamView" path="/system/admin/manageParam.jsp" />
+		</action> 
+		
+		<!-- 会话监控 -->
+		<action name="commonActionForm" path="/sessionMonitor" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.HttpSessionMonitorAction">
+			<forward name="sessionMonitorView" path="/system/admin/sessionMonitor.jsp" />
+		</action> 
+		
+		<!-- JDBC监控 -->
+		<action name="commonActionForm" path="/jdbcMonitor" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.JdbcMonitorAction">
+			<forward name="jdbcInitView" path="/system/admin/jdbcMonitor.jsp" />
+		</action>  
+		
+		<!-- 事件跟踪 -->
+		<action name="commonActionForm" path="/eventTrack" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.EventTrackAction">
+			<forward name="eventTrackView" path="/system/admin/eventTrack.jsp" />
+		</action> 
+		
+		<!-- 获取服务器信息及内存CPU实时监控 -->
+		<action name="commonActionForm" path="/serverInfo" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.ServerInfoAction">
+			<forward name="serverInfoView" path="/system/admin/serverInfo.jsp" />
+		</action> 
+		
+		<!-- SpringBean切面监控 -->
+		<action name="commonActionForm" path="/beanMonitor" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.BeanMonitorAction">
+			<forward name="beanMonitorView" path="/system/admin/beanMonitor.jsp" />
+		</action>
+		
+		<!-- UI组件托管 -->
+		<action name="commonActionForm" path="/part" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.PartAction">
+			<forward name="initView" path="/system/admin/managePart.jsp" />
+		</action>
+		
+		<!-- UI组件人员授权 -->
+		<action name="commonActionForm" path="/userPart" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.UserPartAction">
+			<forward name="initView" path="/system/admin/userPart.jsp" />
+		</action>  
+		 
+		<!-- UI组件角色授权 -->
+		<action name="commonActionForm" path="/rolePart" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.admin.web.RolePartAction">
+			<forward name="initView" path="/system/admin/rolePart.jsp" />
+		</action>  
+		
+		<!-- Web报表引擎 -->
+		<action name="commonActionForm" path="/report" scope="request"  parameter="reqCode"
+			type="org.g4studio.core.web.report.jasper.ReportAcion">
+			<forward name="printInitView" path="/resource/jasper/printInit.jsp" />
+			<forward name="pdfInitView" path="/resource/jasper/pdfInit.jsp" />
+			<forward name="excelInitView" path="/resource/jasper/excelInit.jsp" />
+		</action>  
+		
+		<!-- 代码生成器 -->
+		<action name="commonActionForm" path="/codeGenerator" scope="request"  parameter="reqCode"
+			type="org.g4studio.system.devtoolkit.web.CodeGeneratorAction">
+			<forward name="daoCodeInitView" path="/system/devtoolkit/daoCodeGenerator.jsp" />
+		</action> 
+		
+		
+		<action name="commonActionForm" path="/busruntime" scope="request"
+			parameter="reqCode"
+			type="org.bus.runtime.web.BusRunTimeAction">
+			<forward name="testchartsInitView" path="/app/modules/busruntime/hichart.jsp" />
+			
+			
+			<forward name="calculateTimeInitView" path="/app/modules/busruntime/showbustime.jsp" />
+			<forward name="compareTimeInitView" path="/app/modules/busruntime/compareshowbustime.jsp" />
+			<forward name="showbussitespeedInitView" path="/app/modules/busruntime/showbussitespeed.jsp" />
+			<forward name="overbusspeedInitView" path="/app/modules/busruntime/overbusspeed.jsp" />
+			<forward name="showbusoverspeedreportInitView" path="/app/modules/busruntime/showbusoverspeedreport.jsp" />
+			<forward name="proveTimeInitView" path="/app/modules/busruntime/compareshowlinetime.jsp" />
+			<forward name="showbustimereportView" path="/app/modules/busruntime/showbustimereport.jsp" />
+			
+		
+			
+			
+			<forward name="busSpaceTestInitView" path="/app/modules/busruntime/busspacetest.jsp" />
+			<forward name="busPeakSpaceTestInitView" path="/app/modules/busruntime/buspeakspacetest.jsp" />
+			<forward name="busCompletionPeakInitView" path="/app/modules/busruntime/buscompletionpeak.jsp" />
+			<forward name="busCompletionDayInitView" path="/app/modules/busruntime/buscompletionday.jsp" />
+			<forward name="busPeakInitView" path="/app/modules/busruntime/buspeak.jsp" />
+			<forward name="busChuanInitView" path="/app/modules/busruntime/buschuan.jsp" />
+			<forward name="busSectionRunsInitView" path="/app/modules/busruntime/bussectionrun.jsp" />
+			</action>
+			
+			
+			
+		<action name="commonActionForm" path="/busspeed" scope="request"
+			parameter="reqCode"
+			type="org.bus.runtime.web.BusSpeedAction">
+			<forward name="busUseInitInitView" path="/app/modules/busruntime/bususeratio.jsp" />
+			<forward name="bustourInitInitView" path="/app/modules/busruntime/bustour.jsp" />
+			
+			<forward name="querybustourReportInitView" path="/app/modules/busruntime/bustourreport.jsp" />
+			<forward name="routespeedInitView" path="/app/modules/busruntime/showroutespeed.jsp" />
+			
+			<forward name="topspeedInitView" path="/app/modules/busruntime/topspeed.jsp" />
+			<forward name="stoptimeInitView" path="/app/modules/busruntime/stoptime.jsp" />
+			
+			<forward name="roadblockedInitView" path="/app/modules/abnormal/roadblocked.jsp" />
+			
+			<forward name="commonroadblockedInitView" path="/app/modules/abnormal/commonroadblocked.jsp" />
+			
+			<forward name="bancijiangeInitView" path="/app/modules/abnormal/jiange.jsp" />
+			
+			<forward name="secondbusUseInitView" path="/app/modules/busruntime/secondbususeratio.jsp" />
+			<forward name="bancizhixingInitiew" path="/app/modules/abnormal/bancizhixing.jsp" />
+			
+			<forward name="bancijiangenewInitview" path="/app/modules/abnormal/bancijiange.jsp" />
+			</action>	
+			
+		<action name="commonActionForm" path="/mapshow" scope="request"
+			parameter="reqCode"
+			type="org.bus.mapshow.web.MapShowAction">
+			<forward name="routeshowBymapView" path="/app/MapJiNanv2/index_1.jsp" />
+			<forward name="compareTimeInitView" path="/app/modules/busruntime/compareshowbustime.jsp" />
+			<forward name="proveTimeInitView" path="/app/modules/busruntime/compareshowlinetime.jsp" />
+			<forward name="showMapInitView" path="/app/modules/mapshow/showroutemap.jsp" />
+			<forward name="showMapStationInitView" path="/app/modules/mapshow/showstationmap.jsp" />
+			<forward name="showSpeedMapInitView" path="/app/modules/mapshow/showspeedmap.jsp" />
+			<forward name="showDockTimeInitView" path="/app/modules/mapshow/showdocktimemap.jsp" />
+			<!-- 6-9新加的内容 -->
+			<forward name="showMapRoadInitView" path="/app/modules/mapshow/showroadmap.jsp" />
+			<forward name="showMapNetInitView" path="/app/modules/mapshow/shownetmap.jsp" />
+			
+		</action>
+		
+	<action name="commonActionForm" path="/datainput" scope="request"
+			parameter="reqCode"
+			type="org.bus.datainput.web.BusDataInputAction">
+			<forward name="routeshowBymapView" path="/app/MapJiNanv2/index_1.jsp" />
+			<forward name="compareTimeInitView" path="/app/modules/datainput/compareshowbustime.jsp" />
+			<forward name="busDaysPlanInitView" path="/app/modules/datainput/busdaysplan.jsp" />
+			<forward name="busDaysPlan1InitView" path="/app/modules/datainput/busdaysplan1.jsp" />
+			
+		</action>
+	
+	
+	<action name="commonActionForm" path="/map" scope="request"
+			parameter="reqCode"
+			type="org.bus.runtime.web.BusMapAction">
+			
+			<forward name="busRouteMapInitView" path="/app/map/index.jsp" />
+			
+			<forward name="busSiteSpeedMapInitView" path="/app/map/selectPassenger.jsp" />
+			<forward name="buskeliuMapInitView" path="/app/map/statistics.jsp" />
+			</action>
+			
+			
+			
+	<action name="commonActionForm" path="/datainput" scope="request"
+			parameter="reqCode"
+			type="org.bus.datainput.web.BusDataInputAction">
+			<forward name="routeshowBymapView" path="/app/MapJiNanv2/index_1.jsp" />
+			<forward name="compareTimeInitView" path="/app/modules/datainput/compareshowbustime.jsp" />
+			<forward name="busDaysPlanInitView" path="/app/modules/datainput/busdaysplan.jsp" />
+			
+		</action>
+		
+		
+		
+		<action name="commonActionForm" path="/busbanci" scope="request"
+			parameter="reqCode"
+			type="org.bus.banci.web.BusBanciAction">
+			<forward name="queryCompanyBanciInitView" path="/app/modules/banci/companybanci.jsp" />
+			<forward name="queryTeamBanciInitView" path="/app/modules/banci/teambanci.jsp" />
+			<forward name="queryRouteBanciInitView" path="/app/modules/banci/routebanci.jsp" />
+			<forward name="queryCompanyPeakSectionInitView" path="/app/modules/banci/companypeaksection.jsp" />
+			<forward name="queryTeamPeakSectionInitView" path="/app/modules/banci/teampeaksection.jsp" />
+			<forward name="queryRoutePeakSectionInitView" path="/app/modules/banci/routepeaksection.jsp" />
+			<forward name="queryCompanyFlatPeakIntervalInitView" path="/app/modules/banci/companyflatpeakinterval.jsp" />
+			<forward name="queryTeamFlatPeakIntervalInitView" path="/app/modules/banci/teamflatpeakinterval.jsp" />
+			<forward name="queryRouteFlatPeakIntervalInitView" path="/app/modules/banci/routeflatpeakinterval.jsp" />
+			<forward name="queryCompanyOverInitView" path="/app/modules/banci/companyoverbus.jsp" />
+			<forward name="queryTeamOverInitView" path="/app/modules/banci/teamoverbus.jsp" />
+			<forward name="queryRouteOverInitView" path="/app/modules/banci/routeoverbus.jsp" />
+			<forward name="queryWeekendBanciInitView" path="/app/modules/banci/weekendbanci.jsp" />
+			<forward name="queryBanciExecuteInitView" path="/app/modules/banci/banciexecute.jsp" />
+			<forward name="queryBanciJianGePlanInitView" path="/app/modules/banci/bancijiangeplan.jsp" />
+			
+		</action>
+		
+			<action name="commonActionForm" path="/busout" scope="request"
+			parameter="reqCode"
+			type="org.bus.busout.web.BusOutAction">
+			<forward name="queryCompanyBusOutInitView" path="/app/modules/busout/companybusout.jsp" />
+			<forward name="queryTeamBusOutInitView" path="/app/modules/busout/teambusout.jsp" />
+			<forward name="queryRouteBusOutInitView" path="/app/modules/busout/routebusout.jsp" />
+		</action>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<action name="commonActionForm" path="/banCiNumDynamic" scope="request" parameter="reqCode" type="org.bus.banCiNumDynamic.web.BanCiNumDynamicAction">
+			
+			<forward name="BusBanciDynamicNum" path="/app/modules/banCiNumDynamic/BusBanciDynamicNum.jsp"></forward>
+			<forward name="BusBanciDynamicNum4Team" path="/app/modules/banCiNumDynamic/BusBanciDynamicNum4Team.jsp"></forward>
+			<forward name="BusBanciDynamicNum4Company" path="/app/modules/banCiNumDynamic/BusBanciDynamicNum4Company.jsp"></forward>
+		
+		</action>
+		
+		
+		<action name="commonActionForm" path="/banCiNumDynamic2Count" scope="request" parameter="reqCode" type="org.bus.banCiNumDynamic2Count.web.BanCiNumDynamic2CountAction">
+			
+			<forward name="BusBanciDynamicNum" path="/app/modules/banCiNumDynamic2Count/BusBanciDynamicNum.jsp"></forward>
+			<forward name="BusBanciDynamicNum4Team" path="/app/modules/banCiNumDynamic2Count/BusBanciDynamicNum4Team.jsp"></forward>
+			<forward name="BusBanciDynamicNum4Company" path="/app/modules/banCiNumDynamic2Count/BusBanciDynamicNum4Company.jsp"></forward>
+		
+		</action>
+		
+		<action name="commonActionForm" path="/busdynamic" scope="request" parameter="reqCode" type="org.bus.busdynamic.web.BusDynamicAction">
+		    <forward name="testInitView" path="/app/modules/busdynamic/testbusdynamic.jsp" />
+		    <forward name="testTableInitView" path="/app/modules/busdynamic/testbustabledynamic.jsp" />
+		    <forward name="BusBanciExcuteDynamicTableInitView" path="/app/modules/busdynamic/routebancidynamictable.jsp"/>
+		    <forward name="BusBanciTrailDynamicInitView" path="/app/modules/busdynamic/traildynamic.jsp"/>
+		</action>
+		
+		<action name="commonActionForm" path="/busdynamic2" scope="request" parameter="reqCode" type="org.bus.busdynamic.web.BusDynamicAction2">
+
+		    <forward name="queryBusStationExcuteDynamicInitView" path="/app/modules/busdynamic/queryBusStationExcuteDynamic.jsp"/>
+		</action>
+		
+		
+		
+		
+		
+		
+		
+	</action-mappings>
+	
+	
+	
+	
+
+</struts-config>

@@ -1,0 +1,424 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>道路编辑</title>
+<style type="text/css">
+*{
+    margin:0px;
+    padding:0px;
+}
+body, button, input, select, textarea {
+    font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+}
+#info{
+    width:100%;
+    padding-top:3px;
+    overflow:hidden;
+}
+.btn{
+    width:142px;
+}
+</style>
+<!--<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=nnxL77fSqPkCGqjbeP6osiT2"></script>-->
+<script src="http://api.map.baidu.com/api?v=1.4" type="text/javascript"></script>
+
+<script type="text/javascript" language="javascript">
+	
+	
+	
+	var liststr;
+	var strsplit = "," ;
+	var lists="";
+	var xmlHttp;
+function createXMLHTTP() 
+{ 
+  if(window.XMLHttpRequest) 
+  { 
+    xmlHttp = new XMLHttpRequest();//Mozilla浏览器 
+  } 
+  else if(window.ActiveXObject) 
+  { 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");//IE老版本 
+    } 
+    catch (e) 
+    { } 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Microsoft.XMLHTTP"); //IE新版本 
+    } 
+    catch (e) 
+    { } 
+    if (!xmlHttp) 
+    { 
+      window.alert("不能创建XMLHttpRequest对象实例!"); 
+      return false; 
+    } 
+  } 
+} 
+
+</script>
+
+</head>
+<body>
+<div style="width:100%;height:600px" id="container"></div>
+<div id="info">
+
+</div>
+<div>输入线路:<input type="text" id="xl" />;<select id="Select1" name="D1">
+    <option>上行</option>
+    <option>下行</option>
+    </select><input id="Button1" type="button" value="查询"  onclick="showCustomer();"/></div>
+
+<div>输入道路名称：<input type="text" id="xl2" />；<select id="Select2" name="D1" 
+        disabled="disabled">
+    <option value="N">N</option>
+    <option value="E">E</option>
+        <option value="W">W</option>
+    <option value="S">S</option>
+    </select><input id="Text1" type="text" value="N','S" /></div>
+    <div> <input type="button" value="道路查询"  onclick="road_show_sel();"/></div>
+    <br />
+    <div>现路段id;<input type="text" id="xldid" /></div>
+    <div>需插入路段id;<input type="text" id="oldid" /></div>
+    <div><input type="button" value="插入" onclick="charu();" /></div>
+</body>
+</html>
+<script type="text/javascript" language="javascript">
+// 百度地图API功能
+var point ;
+var map = new BMap.Map("container");//在百度地图容器中创建一个地图
+
+function showInfo(e){
+// alert(e.point.lng + ", " + e.point.lat);
+ searchnear(e.point.lng,e.point.lat)
+}
+map.addEventListener("click", showInfo);
+
+    function initMap()
+    {
+        createMap();//创建地图
+        setMapEvent();//设置地图事件
+        addMapControl();//向地图添加控件
+        addcon();//添加自定义控件
+    }
+    
+    function addcon()
+    {
+    // 定义一个控件类,即function
+        function ZoomControl()
+        {
+          // 默认停靠位置和偏移量
+          this.defaultAnchor = BMAP_ANCHOR_TOP_RIGHT;
+          this.defaultOffset = new BMap.Size(5, 50);
+        }
+
+        // 通过JavaScript的prototype属性继承于BMap.Control
+        ZoomControl.prototype = new BMap.Control();
+
+        ZoomControl.prototype.initialize = function(map){
+          // 创建一个DOM元素
+//          var div = document.createElement("div");
+//        var div=document.getElementById("tui");
+//          // 添加DOM元素到地图中
+//          map.getContainer().appendChild(div);
+          // 将DOM元素返回
+//          return div;
+        }
+        // 创建控件
+        var myZoomCtrl = new ZoomControl();
+        // 添加到地图当中
+    map.addControl(myZoomCtrl);
+    }
+    
+    //创建地图函数：
+    function createMap()
+    {
+        point = new BMap.Point(117.007863, 36.676649);//定义一个中心点坐标
+        map.centerAndZoom(point,13);//设定地图的中心点和坐标并将地图显示在地图容器中
+        window.map = map;//将map变量存储在全局}
+        //鼠标单击显示经纬度
+        }
+        
+
+       
+    
+    
+    //地图事件设置函数：
+    function setMapEvent()
+    {
+        map.enableDragging();//启用地图拖拽事件，默认启用(可不写)
+        map.enableScrollWheelZoom();//启用地图滚轮放大缩小
+        map.enableDoubleClickZoom();//启用鼠标双击放大，默认启用(可不写)
+//        map.enableKeyboard();//启用键盘上下左右键移动地图
+
+    }
+    
+    //地图控件添加函数：
+    function addMapControl()
+    {
+        //向地图中添加缩放控件
+	var ctrl_nav = new BMap.NavigationControl({anchor:BMAP_ANCHOR_TOP_LEFT,type:BMAP_NAVIGATION_CONTROL_ZOOM});
+	map.addControl(ctrl_nav);
+        //向地图中添加缩略图控件
+	var ctrl_ove = new BMap.OverviewMapControl({anchor:BMAP_ANCHOR_BOTTOM_RIGHT,isOpen:true});
+	map.addControl(ctrl_ove);
+        //向地图中添加比例尺控件
+	var ctrl_sca = new BMap.ScaleControl({anchor:BMAP_ANCHOR_BOTTOM_LEFT});
+	map.addControl(ctrl_sca);
+	
+	map.addControl(new BMap.MapTypeControl());          //添加地图类型控件
+
+	}
+
+
+var bx,by,xh
+function showCustomer()
+{
+
+    createXMLHTTP();
+    var mycars = new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+        var strjwdd=xmlHttp.responseText;
+         mycars=strjwdd.split("*"); //字符分割 
+         addPolyline(mycars);//向地图中添       
+        }
+    }
+var rou=document.getElementById("xl").value;
+
+var obj = document.getElementById("Select1"); //定位id
+
+var index = obj.selectedIndex; // 选中索引
+
+var text = obj.options[index].text; // 选中文本
+
+var fx = obj.options[index].value; // 选中值
+
+    var url="Read_Data.aspx?id=2&route="+rou+"&sxx="+fx;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}  
+
+//寻找最近点进行插入
+function searchnear(lng,lat)
+{
+
+    var xlbh=document.getElementById("xldid").value;
+        createXMLHTTP();
+         var mycars = new Array();
+        xmlHttp.onreadystatechange=function()
+        {
+          if (xmlHttp.readyState==4 && xmlHttp.status==200)
+            {
+            var strjwdd=xmlHttp.responseText;
+            mycars=strjwdd.split("*"); //字符分割 
+            var pointB = new BMap.Point(mycars[2],mycars[3]); 
+            var icon = new BMap.Icon("images/icon.png", new BMap.Size(20,32));
+            var marker = new BMap.Marker(pointB,{icon:icon});
+            map.addOverlay(marker);
+            document.getElementById("oldid").value=strjwdd;
+            }
+        }
+    var url="Read_Data.aspx?id=51&xldid="+xlbh+"&lng="+lng+"&lat="+lat;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+
+}
+
+
+
+
+function road_show_sel()
+{
+    map.clearOverlays();//清楚地图覆盖物
+var road=document.getElementById("xl2").value;
+//        var t2=document.getElementById("Select2");
+//    var xhh2=t2.options[t2.selectedIndex].value;
+var xhh2=document.getElementById("Text1").value;
+createXMLHTTP();
+    var mycars=new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+//        showalldiv();
+        var strjwdd=xmlHttp.responseText;
+         mycars=strjwdd.split("#"); //字符分割 
+          addPolyline_road_singel(mycars)
+        }
+    }
+    var url="Read_Data.aspx?id=50&roadname="+road+"&fx="+xhh2;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+
+function addPolyline_road_singel(mycars77)
+{
+
+var mycars66 = new Array();
+  var line;
+
+             for(var jj=0;jj<mycars77.length;jj++)
+             {
+                     mycars66=mycars77[jj].split("*"); //字符分割 
+
+		              var points = [];
+			          var p1="";
+			           var p2="";
+                        for(var j=1;j<mycars66.length;j++)
+		                {
+			                p1 = mycars66[j].split("|")[8];
+			                p2 = mycars66[j].split("|")[9];
+			                var master_id=mycars66[j].split("|")[0];
+			                var idd=mycars66[j].split("|")[10];
+			                 points[j-1]=new BMap.Point(p1,p2);
+			                 addmarkro(master_id,idd,p1,p2); 
+			             }
+	                     line = new BMap.Polyline(points, {strokeColor:"#78C5F9", strokeWeight:3, strokeOpacity:0.9, strokeStyle:"ridge"});
+	                     map.addOverlay(line);
+//	                     line.enableEditing();
+
+			      }
+//			                               map.setViewport(line.getPath());    //调整视野
+}
+
+
+function addmarkro(master_id,idd,lng,lat)
+{
+//        var myIcon = new BMap.Icon("images/iconpng.png", new BMap.Size(23, 25), {  
+//                        offset: new BMap.Size(10, 25), // 指定定位位置  
+//                        imageOffset: new BMap.Size(0, 0 - 10 * 25) // 设置图片偏移  
+//                    });  
+
+ var marker = new BMap.Marker(new BMap.Point(lng,lat));  // 创建标注
+ map.addOverlay(marker); 
+ marker.enableDragging();    //可拖拽
+marker.addEventListener("dragend",function(e){
+updatepoin(master_id,idd,e.point.lng,e.point.lat)
+});
+
+marker.addEventListener("mouseover",function(e){
+document.getElementById("info").innerHTML=master_id+","+idd;
+document.getElementById("xldid").value=master_id;
+});
+
+marker.addEventListener("rightclick",function(e){
+deletepoin(master_id,idd)
+});
+}
+
+function charu()
+{
+createXMLHTTP();
+    var mycars=new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+//        showalldiv();
+        var strjwdd=xmlHttp.responseText;
+        if(strjwdd==1)
+        {
+        document.getElementById("info").innerHTML="插入成功";
+        document.getElementById("oldid").value="插入成功";
+        }
+        else
+        {
+        document.getElementById("info").innerHTML="插入失败";
+        document.getElementById("oldid").value="插入失败";
+        }
+        }
+    }
+    var str=document.getElementById("oldid").value;
+    var mycars66 = new Array();
+    mycars66=str.split("*"); //字符分割 
+    var master_id=mycars66[0];
+    var detail_id=mycars66[1];
+    var url="Read_Data.aspx?id=52&master_id="+master_id+"&idd="+detail_id;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+
+
+
+function updatepoin(master_id,idd,lng,lat)
+{
+createXMLHTTP();
+    var mycars=new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+//        showalldiv();
+        var strjwdd=xmlHttp.responseText;
+        if(strjwdd==1)
+        {
+        document.getElementById("info").innerHTML="修改成功";
+        }
+        else
+        {
+        document.getElementById("info").innerHTML="修改失败";
+        }
+        }
+    }
+    var url="Read_Data.aspx?id=48&master_id="+master_id+"&idd="+idd+"&lng="+lng+"&lat="+lat;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+function deletepoin(master_id,idd)
+{
+createXMLHTTP();
+    var mycars=new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+//        showalldiv();
+        var strjwdd=xmlHttp.responseText;
+        if(strjwdd==1)
+        {
+        document.getElementById("info").innerHTML="删除成功";
+        }
+        else
+        {
+        document.getElementById("info").innerHTML="删除失败";
+        }
+        }
+    }
+    var url="Read_Data.aspx?id=49&master_id="+master_id+"&idd="+idd;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+
+
+function addPolyline(mycars)
+{
+
+       
+	var points = [];
+	var p1;
+	var p2;
+		var pointss=[];
+	for(var j=0;j<mycars.length;j++)
+	{
+	p1 = mycars[j].split("|")[0];
+	p2 = mycars[j].split("|")[1];
+	points[j]=new BMap.Point(p1,p2);
+	}
+	var polyline = new BMap.Polyline(points, {strokeColor:"blue", strokeWeight:6, strokeOpacity:0.5});
+map.addOverlay(polyline);
+polyline.enableEditing();
+ map.setViewport(polyline.getPath());    //调整视野
+	
+
+}
+
+
+initMap();//创建和初始化地图
+</script>

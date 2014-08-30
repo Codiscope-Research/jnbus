@@ -1,0 +1,194 @@
+@CHARSET "UTF-8";
+#allmap{
+	width : 100%;
+	height:100%;
+	left:0px; 
+	top:0px;
+}
+
+#formdiv{
+	position:relative;
+	top:10px; 
+	left:5px;
+	height:100%; 
+	width:240px;
+	position:absolute;
+	left:0px; 
+	top:0px; 
+	background:#ffffff;
+}
+
+#inputdiv{
+	position:relative; 
+	top:10px; 
+	left:10px;
+}
+
+#inputdiv2{
+	position:relative; 
+	top:20px; 
+	left:10px;
+}
+
+#inputdiv3{
+	position:relative; 
+	top:30px; 
+	left:10px;
+}
+
+#inputdiv4{
+	position:relative; 
+	top:40px; 
+	left:10px;
+}
+
+#inputname{
+	font-size:13px;
+	font-family:'ËÎÌו'; 
+	width:80px; 
+	height:20px;
+	
+}
+
+#inputfield{
+	 position:absolute; 
+	 left:80px; 
+	 top:0px;
+}
+
+#submitdiv{
+	position:relative; 
+	top:30px; 
+	left:0px;
+}
+
+#submitdivdock{
+	position:relative; 
+	top:50px; 
+	left:0px;
+}
+
+
+#hidediv{
+	position:absolute;
+	left:240px; 
+	top:40%;
+	width:20px;
+	padding:10px 5px;
+	color:#999;
+	cursor:pointer;
+	text-align:center; 
+	background:#ffffff; 
+	height:80px;
+}
+
+#showbutton{
+	display:none; 
+	position:absolute;
+	left:0px; 
+	top:40%;
+	width:20px;
+	padding:10px 5px;
+	color:#999;
+	cursor:pointer;
+	text-align:center; 
+	background:#ffffff; 
+	height:80px;
+}
+
+#modeselect{
+	position:absolute;
+	right:10px; 
+	top:5px;
+	
+}
+
+#lakuang{
+	position:absolute;
+	right:10px; 
+	top:5px;
+	
+}
+
+#delete{
+	position:absolute;
+	right:40px; 
+	top:5px;
+}
+
+#textall{
+	position:absolute;
+	right:70px; 
+	top:5px;
+}
+#submit{
+	margin-left:180px; 
+	background:#9ad7f4;
+	color: #fff;
+	border: 0px;
+	width: 20%;
+	height:20px;
+}
+
+#hr{
+	position:relative;
+	left:20px;
+	top:40px;
+	background:#deeff7; 
+	width:80%;
+	height:1px;
+}
+
+#hr_dock{
+	position:relative;
+	left:20px;
+	top:70px;
+	background:#deeff7; 
+	width:80%;
+	height:1px;
+}
+
+#hr2{
+	background:#deeff7; 
+	width:60%;
+	margin-left:20%;
+	margin-top:4px;
+	height:1px;
+}
+
+#result{
+	position:relative;
+	left:0px;
+	top:50px;
+	overflow:auto ;
+	height:365px;
+}
+
+#oneresult{
+	
+}
+#resulttitle2{
+	padding:4px 7px;
+	color:#FD7828;
+	margin:0;
+	font-weight: bold
+	line-height:1.5;
+	font-size:13px;	
+}
+#resulttitle{
+	padding:4px 7px;
+	color:#3fbbf5;
+	margin:0;
+	font-weight: bold
+	line-height:1.5;
+	font-size:13px;	
+}
+#resultcontent{
+	padding:0px 7px;
+	margin:0;
+	line-height:1.2;
+	font-size:13px;
+	font-weight: bold
+	word-break:break-all;
+	word-wrap:break-word;	
+}

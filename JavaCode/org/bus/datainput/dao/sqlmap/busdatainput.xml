@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BusDataInput">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo"
+		type="org.g4studio.system.admin.web.tag.vo.UserVo" />
+
+
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" mode="OUT" resultMap="cur_dto" />
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR" />
+		<result column="fyze" property="fyze" jdbcType="DECIMAL" />
+	</resultMap>
+	<procedure id="g4_prc_cursor_demo" parameterMap="prcdto_cur">{call
+		g4_prc_cursor_demo(?,?,?,?)}</procedure>
+
+	<select id="countStddev_bak" parameterClass="map" resultClass="dto">
+		SELECT
+
+		time_format(SEC_TO_TIME(stddev(TIME_TO_SEC(t.StartToMiddle))),'%H.%i.%s')
+		as downpuls,
+		time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.StartToMiddle))),'%H.%i.%s')
+		as downav ,
+
+
+		time_format(SEC_TO_TIME(stddev(TIME_TO_SEC(t.MiddleToEnd))),'%H.%i.%s')
+		as uppuls,
+		time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.MiddleToEnd))),'%H.%i.%s')
+		as upav,
+
+		t.ROUTEID as routeName FROM bus.tb_triptime t where 1=1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="selectroute">
+				t.ROUTEID =
+				#selectroute#
+			</isNotEmpty>
+
+			group by t.ROUTEID
+		</dynamic>
+
+	</select>
+
+	<select id="insertBusDaysPlan" parameterClass="map" resultClass="dto">
+		SELECT *
+		FROM plan2_month p
+		WHERE
+		<dynamic>
+			<isNotEmpty prepend="" property="routeid">
+				p.route_id = #routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sxx">
+				p.upordown = #sxx#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="date">
+				p.date = #date#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="queryRouteStation" parameterClass="map" resultClass="dto">
+SELECT
+  r.station_id   AS station_id,
+  r.station_name
+FROM route_station_view r
+WHERE 1=1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="routeid">
+				r.route_id =
+				#routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sxx">
+				r.sxx = #sxx#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="queryRouteStationUporDownStart" parameterClass="map" resultClass="dto">
+		SELECT
+		station_id_double as startstation,
+   CONCAT(station_id_double,'-',station_name) AS station_name
+  
+FROM route_station_view m
+WHERE route_id = #selectroute#
+    AND sxx = #sxx#
+	</select>
+
+	<select id="queryRouteStationUporDownEnd" parameterClass="map" resultClass="dto">
+		SELECT
+  station_id_double as endstation,
+  CONCAT(station_id_double,'-',station_name) AS station_name
+FROM route_station_view m
+WHERE route_id = #selectroute#
+    AND sxx = #sxx#
+	</select>
+	
+	<update id="updateBusBanci" parameterClass="map">
+	UPDATE tb_banci_201406 t
+SET t.endstation = #endstation#,
+  t.startstation = #startstation#,
+  t.time = #time#,
+  t.upordown = #upordown#,
+  t.productid = #productid#,
+  t.isQuJian = #isqujian#
+WHERE t.rowid = #rowid#
+	</update>
+	
+	
+	<update id="deleteBusBanci" parameterClass="map">
+	delete from tb_banci_201406 where rowid=#rowid#
+	</update>
+	
+	
+	<insert id="addBusBanci" parameterClass="map">
+		INSERT INTO tb_banci_201406
+            (routeid,
+             productid,
+             startstation,
+             endstation,
+             upordown,
+             DATE,
+             TIME,
+             isQuJian,
+             error,
+             stationnum,
+             endStationnum)
+VALUES (#selectroute#,
+        #productid#,
+        #startstation#,
+       #endstation#,
+        #updown_name#,
+       #date#,
+       #time#,
+        #isqujian#,
+       0,
+       (SELECT r.station_id_double AS stationnum FROM route_station_view r WHERE route_id=#selectroute# AND sxx=#sxx# LIMIT 0,1),
+       (SELECT r.station_id_double AS endstationnum FROM route_station_view r WHERE route_id=#selectroute# AND sxx=#sxx# ORDER BY r.station_id_double DESC LIMIT 0,1))
+	</insert>
+	
+	<update id="updateBusDaysPlan" parameterClass="map">
+		UPDATE plan2_month p
+		SET 
+		p.route_id = p.route_id
+		<isNotEmpty prepend="," property="runs_day">
+			p.runs_day = #runs_day#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="m_start">
+			p.m_start = #m_start#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="m_end">
+			p.m_end = #m_end#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="runs">
+			p.runs = #runs#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="inteval_avg">
+			p.inteval_avg =
+			#inteval_avg#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="section_id">
+			p.section_id = #section_id#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="section_id">
+			p.section_name = (SELECT
+			r.station_name FROM route_station_view r WHERE r.sxx=#upordown# AND
+			r.route_id =#route_id# AND r.station_id=#section_id#)
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="section_time_start">
+			p.section_time_start = #section_time_start#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="section_time_start">
+		p.section_time_end =
+		#section_time_end#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="section_runs">
+			p.section_runs = #section_runs#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="interval_avg_section">
+			p.interval_avg_section = #interval_avg_section#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="f_max_inrerval">
+			p.f_max_inrerval = #f_max_inrerval#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="p_rate">
+			p.p_rate = #p_rate#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="num_yypeiche">
+			p.num_yypeiche = #num_yypeiche#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="num_guache">
+			p.num_guache = #num_guache#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="chuanche_zaodifeng">
+			p.chuanche_zaodifeng = #chuanche_zaodifeng#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="chuanche_zaogaofeng">
+			p.chuanche_zaogaofeng = #chuanche_zaogaofeng#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="chuanche_pingfeng">
+			p.chuanche_pingfeng = #chuanche_pingfeng#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="chuanche_wangaofeng">
+			p.chuanche_wangaofeng = #chuanche_wangaofeng#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="chuanche_wandifeng">
+			p.chuanche_wandifeng = #chuanche_wandifeng#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime1">
+			p.weekendtime1 = #weekendtime1#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime1_p">
+			p.weekendtime1_p = #weekendtime1_p#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime2_2">
+			p.weekendtime2_2 = #weekendtime2_2#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime2_p">
+			p.weekendtime2_p = #weekendtime2_p#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime3_1">
+			p.weekendtime3_1 = #weekendtime3_1#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime3_2">
+			p.weekendtime3_2 = #weekendtime3_2#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="weekendtime3_p">
+			p.weekendtime3_p = #weekendtime3_p#
+		</isNotEmpty>
+		
+		WHERE 1=1
+		<isNotEmpty prepend="and" property="route_id">
+			p.route_id = #route_id#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="upordown">
+			p.upordown = #upordown#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="c">
+			p.c = #c#
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="date">
+			p.date = #date#
+		</isNotEmpty>
+		
+	</update>
+
+	<insert id="insertBusDaysPlanKong" parameterClass="map">
+		INSERT INTO
+		plan2_month(date,comp_id,team_id,C,route_id,upordown)
+		VALUES (#date#, #companyName#,
+		(select teamname from meta_dept_route where routename=#routeid#),#c# , #routeid#, #sxx#)
+	</insert>
+
+</sqlMap>

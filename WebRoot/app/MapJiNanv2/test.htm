@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<style type="text/css">
+body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;}
+#l-map{height:100%;width:78%;float:left;border-right:2px solid #bcbcbc;}
+#r-result{height:100%;width:20%;float:left;}
+</style>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=nnxL77fSqPkCGqjbeP6osiT2"></script>
+<title>步行导航检索</title>
+</head>
+<body>
+<div id="l-map"></div>
+<div id="r-result">
+<div>路段名称：<input type="text" id="luduanname" /></div>
+<div>交叉口：<input type="text" id="jiaochakou" /></div>
+<div>方向：<select id="fx" name="czlx" >
+                                            <option value="W">←</option>
+											<option value="E">→</option>
+											 <option value="N">↑</option>
+											<option value="S">↓</option>
+										</select>
+										</div>
+<div>车道数：<input type="text" id="roadlane" /></div>
+<div>公交车道：<input type="text" value="0" id="buslane" /></div>
+
+<div>第一点：<input type="text" id="fir" /></div>
+<div>第二点：<input type="text" id="sec" /></div>
+<div><input type="button" value="获取数组" onclick="getpoint();" /></div>
+<div><input type="button" value="插入" onclick="insertdata();" /></div>
+<div><input type="button" value="清除" onclick="clear();" /></div>
+<div></div>
+<div>公交线路：<input type="text" id="busline" /></div>
+<div><input type="button" value="获取网络公交" onclick="getbus();" /></div>
+<div><input type="button" value="场站获取点插入" onclick="insertdata2();" /></div>
+<div id="info1"></div>
+<div id="info2"></div>
+<div id="getr"></div>
+</div>
+
+</body>
+</html>
+<script type="text/javascript">
+
+// 百度地图API功能
+var map = new BMap.Map("l-map");
+        map.enableScrollWheelZoom();//启用地图滚轮放大缩小
+var contextMenu = new BMap.ContextMenu();
+map.centerAndZoom(new BMap.Point(117.007863, 36.676649), 13);
+
+
+var txtMenuItem = [
+  {
+   text:'第一点',
+   callback:function(e){document.getElementById("fir").value=e.lng+','+e.lat;    var marker = new BMap.Marker(e);
+    map.addOverlay(marker);
+    }
+  },
+  {
+   text:'第二点',
+   callback:function(e){document.getElementById("sec").value=e.lng+','+e.lat;    var marker = new BMap.Marker(e);
+    map.addOverlay(marker);}
+  },
+  {
+   text:'在此添加标注',
+   callback:function(e){
+    var marker = new BMap.Marker(e);
+    map.addOverlay(marker);
+   }
+  }
+ ];
+
+
+ for(var i=0; i < txtMenuItem.length; i++){
+  contextMenu.addItem(new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100));
+//  if(i==1 || i==3) {
+//   contextMenu.addSeparator();
+//  }
+ }
+ map.addContextMenu(contextMenu);
+
+
+function clear()
+{
+    map.clearOverlays();//清楚地图覆盖物
+}
+
+function createXMLHTTP() 
+{ 
+  if(window.XMLHttpRequest) 
+  { 
+    xmlHttp = new XMLHttpRequest();//Mozilla浏览器 
+  } 
+  else if(window.ActiveXObject) 
+  { 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");//IE老版本 
+    } 
+    catch (e) 
+    { } 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Microsoft.XMLHTTP"); //IE新版本 
+    } 
+    catch (e) 
+    { } 
+    if (!xmlHttp) 
+    { 
+      window.alert("不能创建XMLHttpRequest对象实例!"); 
+      return false; 
+    } 
+  } 
+} 
+
+
+
+
+
+
+function getbus()
+{
+var busline = new BMap.BusLineSearch(map,{
+    renderOptions:{map:map,panel:"info1"},
+        onGetBusListComplete: function(result){
+           if(result) {
+             var fstLine = result.getBusListItem(0);//获取第一个公交列表显示到map上
+             busline.getBusLine(fstLine);
+           }
+        }
+});
+var t=document.getElementById("busline").value;
+function busSearch(){
+    var busName = t;
+    busline.getBusList(busName);
+}
+
+setTimeout(function(){
+    busSearch();
+},1500);
+}
+
+var myarraycz="";
+
+function showInfo(e){
+// alert(e.point.lng + ", " + e.point.lat);
+ var lng=e.point.lng;
+ var lat=e.point.lat;
+myarraycz=myarraycz+lng+","+lat+'|';
+addPolyline(myarraycz);
+}
+map.addEventListener("click", showInfo);
+
+
+
+function addPolyline(mycars2)
+{
+ mycars2=mycars2.substr(0,mycars2.length-1);
+ 
+	var mycars = [];
+mycars=mycars2.split("|"); //字符分割 
+   
+	var p1;
+	var p2;
+	var line;
+		var pointss=[];
+	for(var j=0;j<mycars.length;j++)
+	{
+	p1 = mycars[j].split(",")[0];
+	p2 = mycars[j].split(",")[1];
+	pointss[j]=new BMap.Point(p1,p2);
+	}
+	line = new BMap.Polyline(pointss, {strokeColor:"#FF9900", strokeWeight:6, strokeOpacity:0.9, strokeStyle:"ridge"}); 
+	map.addOverlay(line);
+	
+}
+
+
+
+function insertdata2()
+{
+ var fir=document.getElementById("fir").value;
+ var sec=document.getElementById("sec").value;
+// var fx=document.getElementById("fx");
+						    var t=document.getElementById("fx");
+                            var fx=t.options[t.selectedIndex].value;
+ var roadlane=document.getElementById("roadlane").value;
+ var buslane=document.getElementById("buslane").value;
+ var luduanname=document.getElementById("luduanname").value;
+ var jiaochakou=document.getElementById("jiaochakou").value;
+
+        createXMLHTTP();
+        xmlHttp.onreadystatechange=function()
+        {
+          if (xmlHttp.readyState==4 && xmlHttp.status==200)
+            {
+            var strjwdd=xmlHttp.responseText;
+            if(strjwdd==4)
+            {
+            alert("插入成功!");
+             document.getElementById("info1").innerHTML="插入成功!";
+            document.getElementById("info1").style.backgroundColor="green";
+            document.getElementById("info1").style.color="white";
+
+            }
+            else
+            {
+            document.getElementById("info1").innerHTML="插入失败!";
+            document.getElementById("info1").style.color="white";
+            document.getElementById("info1").style.backgroundColor="red";
+            }
+            }
+        }
+    var url="Read_Data.aspx?id=45&roadname="+luduanname+"&jiaochakou="+jiaochakou+"&fx="+fx+"&roadlane="+roadlane+"&buslane="+buslane+"&fir="+fir+"&sec="+sec+"&jwd="+myarraycz;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+
+
+
+
+
+
+//var myarray=[];
+var myarray="";
+function getpoint()
+{
+                        myarray="";
+var fir=document.getElementById("fir").value;
+var sec=document.getElementById("sec").value;
+var Driving = new BMap.DrivingRoute(map, {renderOptions:{map: map, autoViewport: true}});
+var myP1 = new BMap.Point(fir.split(",")[0],fir.split(",")[1]);    //起点
+var myP2 = new BMap.Point(sec.split(",")[0],sec.split(",")[1]);    //终点
+Driving.search(myP1, myP2);
+
+
+Driving.setSearchCompleteCallback(function(){
+        var pts = Driving.getResults().getPlan(0).getRoute(0).getPath();    //通过驾车实例，获得一系列点的数组
+        var paths = pts.length;    //获得有几个点
+        var sst="";
+        
+        for(var ii=0;ii<paths;ii++)
+        {
+
+        sst=sst+pts[ii].lng+","+pts[ii].lat+"<br/>"
+        myarray=myarray+pts[ii].lng+","+pts[ii].lat+'|';
+        }
+        document.getElementById("getr").innerHTML=sst;
+        });
+
+
+}
+function insertdata()
+{
+ var fir=document.getElementById("fir").value;
+ var sec=document.getElementById("sec").value;
+// var fx=document.getElementById("fx");
+						    var t=document.getElementById("fx");
+                            var fx=t.options[t.selectedIndex].value;
+ var roadlane=document.getElementById("roadlane").value;
+ var buslane=document.getElementById("buslane").value;
+ var luduanname=document.getElementById("luduanname").value;
+ var jiaochakou=document.getElementById("jiaochakou").value;
+
+        createXMLHTTP();
+        xmlHttp.onreadystatechange=function()
+        {
+          if (xmlHttp.readyState==4 && xmlHttp.status==200)
+            {
+            var strjwdd=xmlHttp.responseText;
+            if(strjwdd==4)
+            {
+            alert("插入成功!");
+             document.getElementById("info1").innerHTML="插入成功!";
+            document.getElementById("info1").style.backgroundColor="green";
+            document.getElementById("info1").style.color="white";
+
+            }
+            else
+            {
+            document.getElementById("info1").innerHTML="插入失败!";
+            document.getElementById("info1").style.color="white";
+            document.getElementById("info1").style.backgroundColor="red";
+            }
+            }
+        }
+    var url="Read_Data.aspx?id=45&roadname="+luduanname+"&jiaochakou="+jiaochakou+"&fx="+fx+"&roadlane="+roadlane+"&buslane="+buslane+"&fir="+fir+"&sec="+sec+"&jwd="+myarray;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+</script>

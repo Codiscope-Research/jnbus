@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>无标题文档</title>
+
+<style type="text/css">
+
+body {
+	background-color: #FFBB55;
+}
+.STYLE3 {
+	font-family: Microsoft YaHei UI;
+	font-size: 22px;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+.STYLE4 {
+	font-family: "Microsoft YaHei UI";
+	color: #FFFFFF;
+	font-size: 16px;
+}
+.STYLE5 {font-size: 16px}
+
+</style></head>
+
+<body style="line-height:150%">
+<table width="97%" border="0" align="center">
+  <tr>
+    <td><span class="STYLE3">总体概况</span></td>
+  </tr>
+  <tr>
+    <td align="left" valign="middle"><p class="STYLE4 STYLE5"> &nbsp &nbsp &nbsp &nbsp 济南市公共交通总公司是市属国有大型一类公益性企业。</p>
+    <p class="STYLE4"> &nbsp &nbsp &nbsp &nbsp 截止2013年3月，拥有公交线路209条，运营线路总长度3518.7公里，线网总长度1083.3公里，其中公交专用道125.3公里；公交站点3345处，其中港湾式停靠站425处，BRT专用站台34处；线路平均重复系数为3.27。</p></td>
+  </tr>
+</table>
+
+</body>
+</html>

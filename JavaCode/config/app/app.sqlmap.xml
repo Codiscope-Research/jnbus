@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<!-- 业务系统的SQL映射文件装载 -->
+<sqlMapConfig>
+	<settings useStatementNamespaces="true" />
+	<!-- 请将此配置改为您的业务系统包路径下的SQL映射文件 -->
+	<sqlMap resource="org/g4studio/demo/dao/sqlmap/biz/Temp.xml" />
+	<sqlMap resource="org/bus/runtime/dao/sqlmap/bus.xml" />
+	<sqlMap resource="org/bus/runtime/dao/sqlmap/busnew.xml" />
+	<sqlMap resource="org/bus/datainput/dao/sqlmap/busdatainput.xml" />
+	<sqlMap resource="org/bus/banci/dao/sqlmap/busbanci.xml" />
+	<sqlMap resource="org/bus/mapshow/dao/sqlmap/mapshow.xml" />
+	<sqlMap resource="org/bus/busout/dao/sqlmap/busout.xml" />
+	
+	<sqlMap resource="org/bus/banCiNumDynamic/dao/sqlmap/banCiNumDynamic.xml" />
+	<sqlMap resource="org/bus/banCiNumDynamic2Count/dao/sqlmap/banCiNumDynamic2Count.xml"/>
+	<sqlMap resource="org/bus/busdynamic/dao/sqlmap/busdynamic.xml" />
+	<sqlMap resource="org/bus/busdynamic/dao/sqlmap/busdynamic2.xml" />
+</sqlMapConfig>

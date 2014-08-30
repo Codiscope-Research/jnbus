@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+<struts-config>
+	<!-- 配置ActionFormBean -->
+	<form-beans>
+		<!-- 公共Form -->
+		<form-bean name="commonActionForm" type="org.g4studio.core.web.CommonActionForm" />
+	</form-beans>
+
+	<!-- Action映射 -->
+	<action-mappings type="org.g4studio.core.mvc.xstruts.action.ActionMapping">
+		
+	<action name="commonActionForm" path="/busruntime" scope="request"
+			parameter="reqCode"
+			type="org.bus.runtime.web.BusRunTimeAction">
+			
+			<forward name="calculateTimeInitView" path="app/modules/busruntime/showbustime.jsp" />
+			</action>
+	
+	</action-mappings>
+
+</struts-config>

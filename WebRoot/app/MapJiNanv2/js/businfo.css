@@ -1,0 +1,38 @@
+#businfoResult li .op img{background-image:url(../images/2.png);background-repeat:no-repeat;}
+#businfoResult{font-size:13px;color:#5d5d5d;}
+#businfoResult li{background-color:#EAF0FB;margin:2px 0;line-height:24px; clear:both} /*@@ccl*/
+#businfoResult .passLine{background-color:white;font-weight:normal;line-height:normal;}
+#businfoResult .passLine span{font-size:12px;padding:0 0 0 30px;background:#FFF url(../images/orange_arrow.gif) no-repeat 15px 2px;text-decoration:none;color:#333;display:block;line-height:20px;}
+#businfoResult .passLine span.onmouseover{background:#FEABAD url(../images/red_arrow.gif) no-repeat 15px 3px;}
+#businfoResult li.hl,#businfoResult li.on{background-color:#F46219;color:#FFF;cursor:pointer;}
+#businfoResult li .cap{padding:0 0 0 5px;}
+#businfoResult li .op{margin:1px 3px;/* float:left; */}
+#businfoResult li .op img{width:12px;height:12px;background-position:-215px -92px;}
+#businfoResult li .op span{margin-left:8px;text-decoration:underline;}
+#businfoResult li .detailInfo{display:none;margin:0 auto;border-top:2px solid #FFF;background-color: #FFF;}
+#businfoResult li.on .op img{background-position:-215px -104px;}
+#businfoResult li.on .detailInfo{display:block;}
+#businfoResult .detailInfo .subwayBoard,#businfoResult .detailInfo .busBoard{position:relative;margin-left:0;}
+.busCity{margin:5px 15px;line-height:20px;}
+.moreBusCity{cursor:pointer;text-decoration:underline;display:inline;color:#00f;}
+
+#businfoResult .busBoard{width:100%;color:#000;}
+#businfoResult .busBoard .div1{line-height:20px;font-weight:700;} /*@@ccl*/
+#businfoResult .busBoard .div1,
+#businfoResult .busBoard .div2{padding:0 0 0 15px;background-color:#EAF0FB;}
+#businfoResult .busBoard .div3{/*line-height:normal;*/} /*@@ccl*/
+#businfoResult .busBoard .div11, 
+#businfoResult .busBoard .div121{display:none;}
+#businfoResult .busBoard .div12{float:none;width:100%;}
+#businfoResult .busBoard .div122,#businfoResult .busBoard .div123,
+#businfoResult .busBoard .div124,#businfoResult .busBoard .div125{text-align:left;margin:0;color:#000;}
+#businfoResult .busBoard .div2 .floatLeft{float:none;}
+#businfoResult .busBoard .div31{ /*width:795px;*/ /* width:100%; */ /*margin:0 10px;*/} /*@@ccl 262*/
+#businfoResult .busBoard .div4{line-height:normal;}
+
+.page_all{background-color:#BCD3C2;clear:both;text-align:left;color:#000;font-size:12px;line-height:24px;}
+.page_itemr{cursor:pointer;margin:0 5px 0 0;display:inline;}
+.page_iteml{cursor:pointer;margin:0 0 0 5px;display:inline;}
+.page_null{margin:0 0 0 5px;display:inline;}
+.page_count{display:inline;margin:0 0 0 10px;}
+.page_nav{display:inline;margin:0 20px 0 0;float:right;}

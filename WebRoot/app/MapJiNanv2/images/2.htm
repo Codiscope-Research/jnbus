@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>��������</title>
+<style type="text/css">
+#div_1 { width:100px; height:80px; background:#0f0; position:fixed; _position:absolute; right:0px; top:0px;}
+</style>
+<script type="text/javascript">
+window.onscroll = window.onresize = window.onload = function(){
+ 
+ var odiv = document.getElementById("div_1");
+ var sTop = document.documentElement.scrollTop || document.body.scrollTop;
+ var cHeight= document.documentElement.clientHeight || document.body.clientHeight;
+ var mid = (cHeight - odiv.offsetHeight) / 2; 
+ // odiv.style.top = parseInt(sTop + mid) + "px";   //������Ӧ��ֻ�����Ϳ��Ծ��а�
+ 
+ //ʵ���ϵ� ���������ֻ��ʶ������if�ж�
+ if(navigator.appVersion.indexOf("MSIE 6")> -1){
+  odiv.style.top = parseInt(sTop + mid) + "px";
+ }else{
+  odiv.style.top =mid + "px";
+ }
+}
+</script>
+</head>
+
+<body style="height:2000px">
+<div id="div_1"><img src="rexian.gif"/></div>
+</body>
+</html>

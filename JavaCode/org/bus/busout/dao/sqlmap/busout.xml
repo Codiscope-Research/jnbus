@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BusOut">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo"
+		type="org.g4studio.system.admin.web.tag.vo.UserVo" />
+
+
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" mode="OUT" resultMap="cur_dto" />
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR" />
+		<result column="fyze" property="fyze" jdbcType="DECIMAL" />
+	</resultMap>
+	<procedure id="g4_prc_cursor_demo" parameterMap="prcdto_cur">{call
+		g4_prc_cursor_demo(?,?,?,?)}</procedure>
+
+	<select id="queryteamDatas" parameterClass="map" resultClass="dto">
+		SELECT deptid as value, deptname as text
+		FROM eadept t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				t.PARENTID = $deptid$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="queryCompanyBusOut" parameterClass="map" resultClass="dto">
+	SELECT
+  CONCAT(#date1#,'~',#date2#) AS DATE,
+  mod_route.comp_id,
+  ee.deptname AS comp_name,
+  mod_route.zf_num_yypeiche,
+  mod_route.zf_num_guache,
+  mod_route.qr_out,
+  mod_route.zf_out,
+  mod_route.wf_out,
+  mod_route.gf,
+  ROUND( ( mod_route.zf_out + mod_route.wf_out ) / (mod_route.zf_num_yypeiche * 2) * 100, 2 ) AS peichelv
+FROM (
+SELECT
+        SUBSTR(r.team_id,1,6) AS comp_id,
+        SUM(r.zf_num_yypeiche)     AS zf_num_yypeiche,
+        SUM(r.zf_num_guache)       AS zf_num_guache,
+        SUM(r.qr_out)              AS qr_out,
+        SUM(r.zf_out)              AS zf_out,
+        SUM(r.wf_out)              AS wf_out,
+        SUM(r.gf)                  AS gf
+      FROM chuchetj_month_route r
+      WHERE r.date BETWEEN #date1#
+          AND #date2#
+          GROUP BY comp_id) mod_route 
+          RIGHT JOIN (SELECT e.deptid, e.DEPTNAME FROM eadept e WHERE e.DEPTNAME LIKE '%公司')ee ON ee.deptid=mod_route.comp_id
+      UNION 
+      SELECT
+  CONCAT(#date1#,'~',#date2#) AS DATE,
+  '-1' AS team_id,
+  '合计' AS deptname,
+  r2.zf_num_yypeiche,
+  r2.zf_num_guache,
+  r2.qr_out,
+  r2.zf_out,
+  r2.wf_out,
+  r2.gf,
+  ROUND( ( r2.zf_out + r2.wf_out ) / (r2.zf_num_yypeiche * 2) * 100, 2 ) AS peichelv
+FROM (
+SELECT
+        r.team_id,
+        SUM(r.zf_num_yypeiche)     AS zf_num_yypeiche,
+        SUM(r.zf_num_guache)       AS zf_num_guache,
+        SUM(r.qr_out)              AS qr_out,
+        SUM(r.zf_out)              AS zf_out,
+        SUM(r.wf_out)              AS wf_out,
+        SUM(r.gf)                  AS gf
+      FROM chuchetj_month_route r
+      WHERE r.date BETWEEN #date1#
+          AND #date2#)r2
+	</select>
+	<select id="queryTeamBusOut" parameterClass="map" resultClass="dto">
+	SELECT
+  CONCAT(#date1#,'~',#date2#) AS DATE,
+  mod_route.team_id,
+  ee.deptname AS team_name,
+  mod_route.zf_num_yypeiche,
+  mod_route.zf_num_guache,
+  mod_route.qr_out,
+  mod_route.zf_out,
+  mod_route.wf_out,
+  mod_route.gf,
+  ROUND( ( mod_route.zf_out + mod_route.wf_out ) / (mod_route.zf_num_yypeiche * 2) * 100, 2 ) AS peichelv
+FROM (
+SELECT
+        r.team_id,
+        SUM(r.zf_num_yypeiche)     AS zf_num_yypeiche,
+        SUM(r.zf_num_guache)       AS zf_num_guache,
+        SUM(r.qr_out)              AS qr_out,
+        SUM(r.zf_out)              AS zf_out,
+        SUM(r.wf_out)              AS wf_out,
+        SUM(r.gf)                  AS gf
+      FROM chuchetj_month_route r
+      WHERE r.date BETWEEN #date1#
+          AND #date2#
+          AND SUBSTR(r.team_id,1,6) = #companyName# GROUP BY r.team_id) mod_route 
+          RIGHT JOIN (SELECT
+        e.deptid,
+        e.deptname,
+        e.parentid
+      FROM eadept e
+      WHERE e.PARENTID = #companyName#)ee ON ee.deptid=mod_route.team_id
+      UNION 
+      SELECT
+  CONCAT(#date1#,'~',#date2#) AS DATE,
+  '-1' AS team_id,
+  '合计' AS deptname,
+  r2.zf_num_yypeiche,
+  r2.zf_num_guache,
+  r2.qr_out,
+  r2.zf_out,
+  r2.wf_out,
+  r2.gf,
+  ROUND( ( r2.zf_out + r2.wf_out ) / (r2.zf_num_yypeiche * 2) * 100, 2 ) AS peichelv
+FROM (
+SELECT
+        r.team_id,
+        SUM(r.zf_num_yypeiche)     AS zf_num_yypeiche,
+        SUM(r.zf_num_guache)       AS zf_num_guache,
+        SUM(r.qr_out)              AS qr_out,
+        SUM(r.zf_out)              AS zf_out,
+        SUM(r.wf_out)              AS wf_out,
+        SUM(r.gf)                  AS gf
+      FROM chuchetj_month_route r
+      WHERE r.date BETWEEN #date1#
+          AND #date2#
+          AND SUBSTR(r.team_id,1,6) = #companyName#)r2
+	</select>
+	<select id="queryRouteBusOut" parameterClass="map" resultClass="dto">
+	    SELECT
+  CONCAT(#date1#,'~',#date2#) AS DATE,
+  mod_route.routename AS route_name,
+  mod_route.zf_num_yypeiche,
+  mod_route.zf_num_guache,
+  mod_route.qr_out,
+  mod_route.zf_out,
+  mod_route.wf_out,
+  mod_route.gf,
+  ROUND( ( mod_route.zf_out + mod_route.wf_out ) / (mod_route.zf_num_yypeiche * 2) * 100, 2 ) AS peichelv
+FROM (SELECT
+        r.team_id,
+        r.routeid,
+        r.routename,
+        SUM(r.zf_num_yypeiche)     AS zf_num_yypeiche,
+        SUM(r.zf_num_guache)       AS zf_num_guache,
+        SUM(r.qr_out)              AS qr_out,
+        SUM(r.zf_out)              AS zf_out,
+        SUM(r.wf_out)              AS wf_out,
+        SUM(r.gf)                  AS gf
+      FROM chuchetj_month_route r
+      WHERE r.date BETWEEN #date1#
+          AND #date2#
+          AND r.team_id = #team#
+      GROUP BY r.routeid) mod_route
+UNION 
+SELECT
+  CONCAT(#date1#,'~',#date2#) AS DATE,
+  '合计' AS routename,
+  r2.zf_num_yypeiche,
+  r2.zf_num_guache,
+  r2.qr_out,
+  r2.zf_out,
+  r2.wf_out,
+  r2.gf,
+  ROUND( ( r2.zf_out + r2.wf_out ) / (r2.zf_num_yypeiche * 2) * 100, 2 ) AS peichelv
+FROM (SELECT
+        r.team_id,
+        r.routeid,
+        r.routename,
+        SUM(r.zf_num_yypeiche)     AS zf_num_yypeiche,
+        SUM(r.zf_num_guache)       AS zf_num_guache,
+        SUM(r.qr_out)              AS qr_out,
+        SUM(r.zf_out)              AS zf_out,
+        SUM(r.wf_out)              AS wf_out,
+        SUM(r.gf)                  AS gf
+      FROM chuchetj_month_route r
+      WHERE r.date BETWEEN #date1#
+          AND #date2#
+          AND r.team_id = #team#) r2
+	</select>
+</sqlMap>

@@ -1,0 +1,2053 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BusBanci">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo"
+		type="org.g4studio.system.admin.web.tag.vo.UserVo" />
+
+
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" mode="OUT" resultMap="cur_dto" />
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String"
+			mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR" />
+		<result column="fyze" property="fyze" jdbcType="DECIMAL" />
+	</resultMap>
+	<procedure id="g4_prc_cursor_demo" parameterMap="prcdto_cur">{call
+		g4_prc_cursor_demo(?,?,?,?)}</procedure>
+
+	<select id="queryteamDatas" parameterClass="map" resultClass="dto">
+		SELECT deptid as value, deptname as text
+		FROM eadept t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				t.PARENTID = $deptid$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="countStddev_bak" parameterClass="map" resultClass="dto">
+		SELECT
+
+		time_format(SEC_TO_TIME(stddev(TIME_TO_SEC(t.StartToMiddle))),'%H.%i.%s')
+		as downpuls,
+		time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.StartToMiddle))),'%H.%i.%s')
+		as downav ,
+
+
+		time_format(SEC_TO_TIME(stddev(TIME_TO_SEC(t.MiddleToEnd))),'%H.%i.%s')
+		as uppuls,
+		time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.MiddleToEnd))),'%H.%i.%s')
+		as upav,
+
+		t.ROUTEID as routeName FROM bus.tb_triptime t where 1=1
+		<dynamic>
+			<isNotEmpty prepend="AND" property="selectroute">
+				t.ROUTEID =
+				#selectroute#
+			</isNotEmpty>
+
+			group by t.ROUTEID
+		</dynamic>
+
+	</select>
+
+	<select id="queryCompanyBanci" parameterClass="map" resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS date,
+		ee.deptid AS comp_id,
+		ee.deptname AS comp_name,
+		rr.runs_day,
+		rr.qrwc,
+		ROUND(rr.qrwc /
+		rr.runs_day*100,2) AS qrbfb,
+		rr.zg_jh,
+		rr.zgwc,
+		ROUND(rr.zgwc /
+		rr.zg_jh*100,2) AS zgbfb,
+		rr.wg_jh,
+		rr.wgwc,
+		ROUND(rr.wgwc /
+		rr.wg_jh*100,2) AS wgbfb,
+		(rr.zg_jh+rr.wg_jh) AS gf_jh,
+		(rr.zgwc+rr.wgwc) AS gfwc,
+		ROUND((rr.zgwc+rr.wgwc)/(rr.zg_jh+rr.wg_jh)
+		*100,2) AS gfbfb
+		FROM (
+		SELECT e.deptid, e.DEPTNAME FROM eadept e WHERE
+		e.DEPTNAME LIKE '%公司'
+		) ee LEFT JOIN (
+		SELECT
+		SUBSTR(r.team_id,1,6) AS
+		comp_id,
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh)
+		AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route r
+		WHERE r.date BETWEEN #date1#
+		AND #date2#
+		GROUP
+		BY comp_id
+		) rr
+		ON ee.deptid=rr.comp_id
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS comp_date,
+		'-1' AS comp_id,
+		'合计' AS
+		comp_name,
+		allr.runs_day,
+		allr.qrwc,
+		ROUND(allr.qrwc /
+		allr.runs_day*100,2) AS qrbfb,
+		allr.zg_jh,
+		allr.zgwc,
+		ROUND(allr.zgwc /
+		allr.zg_jh*100,2) AS zgbfb,
+		allr.wg_jh,
+		allr.wgwc,
+		ROUND(allr.wgwc /
+		allr.wg_jh*100,2) AS wgbfb,
+		(allr.zg_jh+allr.wg_jh) AS gf_jh,
+		(allr.zgwc+allr.wgwc) AS gfwc,
+		ROUND((allr.zgwc+allr.wgwc)/(allr.zg_jh+allr.wg_jh) *100,2) AS gfbfb
+		FROM(
+		SELECT
+
+		SUBSTR(r.team_id,1,6) AS comp_id,
+		SUM(r.runs_day) AS
+		runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS
+		zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route
+		r
+		WHERE r.date BETWEEN #date1#
+		AND #date2#
+
+		) allr
+	</select>
+
+	<select id="queryTeamBanci" parameterClass="map" resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS date,
+		ee.deptid AS team_id,
+		ee.deptname AS team_name,
+		r1.runs_day,
+		r1.qrwc,
+		ROUND(r1.qrwc /
+		r1.runs_day*100,2) AS qrbfb,
+		r1.zg_jh,
+		r1.zgwc,
+		ROUND(r1.zgwc /
+		r1.zg_jh*100,2) AS zgbfb,
+		r1.wg_jh,
+		r1.wgwc,
+		ROUND(r1.wgwc /
+		r1.wg_jh*100,2) AS wgbfb
+		FROM (SELECT
+		e.deptid,
+		e.deptname,
+		e.parentid
+		FROM eadept e
+		WHERE e.PARENTID = #companyName#) ee
+		LEFT JOIN (SELECT
+		r.team_id,
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM bancitj_month_route r
+		WHERE r.date BETWEEN
+		#date1#
+		AND #date2#
+		AND SUBSTR(r.team_id,1,6)=#companyName#
+		GROUP BY
+		r.team_id) r1
+		ON r1.team_id = ee.deptid
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS team_date,
+		'-1' AS team_id,
+		'合计' AS
+		team_name,
+		allr.runs_day,
+		allr.qrwc,
+		ROUND(allr.qrwc /
+		allr.runs_day*100,2) AS qrbfb,
+		allr.zg_jh,
+		allr.zgwc,
+		ROUND(allr.zgwc /
+		allr.zg_jh*100,2) AS zgbfb,
+		allr.wg_jh,
+		allr.wgwc,
+		ROUND(allr.wgwc /
+		allr.wg_jh*100,2) AS wgbfb
+		FROM(
+		SELECT
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND
+		SUBSTR(r.team_id,1,6)=#companyName#
+		) allr
+	</select>
+
+	<select id="queryRouteBanci" parameterClass="map" resultClass="dto">
+		SELECT
+		r1.route_date as date,
+		r1.routeid AS route_name,
+		r1.runs_day,
+		r1.qrwc,
+		ROUND(r1.qrwc / r1.runs_day*100,2) AS qrbfb,
+		r1.zg_jh,
+		r1.zgwc,
+		ROUND(r1.zgwc / r1.zg_jh*100,2) AS zgbfb,
+		r1.wg_jh,
+		r1.wgwc,
+		ROUND(r1.wgwc / r1.wg_jh*100,2) AS wgbfb
+		FROM(
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS route_date,
+		r.routeid,
+		SUM(r.runs_day) AS
+		runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS
+		zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route
+		r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND r.team_id=#team# GROUP BY
+		r.routeid) r1
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS route_date,
+		'合计' AS routeid,
+		r2.runs_day,
+		r2.qrwc,
+		ROUND(r2.qrwc / r2.runs_day*100,2)
+		AS qrbfb,
+		r2.zg_jh,
+		r2.zgwc,
+		ROUND(r2.zgwc / r2.zg_jh*100,2) AS zgbfb,
+		r2.wg_jh,
+		r2.wgwc,
+		ROUND(r2.wgwc / r2.wg_jh*100,2) AS wgbfb
+		FROM(
+		SELECT
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND
+		r.team_id=#team#) r2
+	</select>
+
+	<select id="queryCompanyBanciW" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS date,
+		ee.deptid AS
+		comp_id,
+		ee.deptname AS comp_name,
+		rr.runs_day,
+		rr.qrwc,
+		ROUND(rr.qrwc /
+		rr.runs_day*100,2) AS qrbfb,
+		rr.zg_jh,
+		rr.zgwc,
+		ROUND(rr.zgwc /
+		rr.zg_jh*100,2) AS zgbfb,
+		rr.wg_jh,
+		rr.wgwc,
+		ROUND(rr.wgwc /
+		rr.wg_jh*100,2) AS wgbfb,
+		(rr.zg_jh+rr.wg_jh) AS gf_jh,
+		(rr.zgwc+rr.wgwc) AS gfwc,
+		ROUND((rr.zgwc+rr.wgwc)/(rr.zg_jh+rr.wg_jh)
+		*100,2) AS gfbfb
+		FROM (
+		SELECT e.deptid, e.DEPTNAME FROM eadept e WHERE
+		e.DEPTNAME LIKE '%公司'
+		) ee LEFT JOIN (
+		SELECT
+		SUBSTR(r.team_id,1,6) AS
+		comp_id,
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh)
+		AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND
+		(r.today between 2 and 6 )
+		GROUP BY comp_id
+		) rr
+		ON ee.deptid=rr.comp_id
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS comp_date,
+		'-1' AS comp_id,
+		'合计' AS comp_name,
+		allr.runs_day,
+		allr.qrwc,
+		ROUND(allr.qrwc /
+		allr.runs_day*100,2) AS qrbfb,
+		allr.zg_jh,
+		allr.zgwc,
+		ROUND(allr.zgwc /
+		allr.zg_jh*100,2) AS zgbfb,
+		allr.wg_jh,
+		allr.wgwc,
+		ROUND(allr.wgwc /
+		allr.wg_jh*100,2) AS wgbfb,
+		(allr.zg_jh+allr.wg_jh) AS gf_jh,
+		(allr.zgwc+allr.wgwc) AS gfwc,
+		ROUND((allr.zgwc+allr.wgwc)/(allr.zg_jh+allr.wg_jh) *100,2) AS gfbfb
+		FROM(
+		SELECT
+
+		SUBSTR(r.team_id,1,6) AS comp_id,
+		SUM(r.runs_day) AS
+		runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS
+		zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route
+		r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND (r.today between 2 and 6
+		)
+
+		) allr
+	</select>
+	<select id="queryTeamBanciW" parameterClass="map" resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS date,
+		ee.deptid AS team_id,
+		ee.deptname AS team_name,
+		r1.runs_day,
+		r1.qrwc,
+		ROUND(r1.qrwc /
+		r1.runs_day*100,2) AS qrbfb,
+		r1.zg_jh,
+		r1.zgwc,
+		ROUND(r1.zgwc /
+		r1.zg_jh*100,2) AS zgbfb,
+		r1.wg_jh,
+		r1.wgwc,
+		ROUND(r1.wgwc /
+		r1.wg_jh*100,2) AS wgbfb
+		FROM (SELECT
+		e.deptid,
+		e.deptname,
+		e.parentid
+		FROM eadept e
+		WHERE e.PARENTID = #companyName#) ee
+		LEFT JOIN (SELECT
+		r.team_id,
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM bancitj_month_route r
+		WHERE r.date BETWEEN
+		#date1#
+		AND #date2# AND (r.today between 2 and 6 )
+		AND
+		SUBSTR(r.team_id,1,6)=#companyName#
+		GROUP BY r.team_id) r1
+		ON r1.team_id
+		= ee.deptid
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS team_date,
+		'-1' AS
+		team_id,
+		'合计' AS team_name,
+		allr.runs_day,
+		allr.qrwc,
+		ROUND(allr.qrwc /
+		allr.runs_day*100,2) AS qrbfb,
+		allr.zg_jh,
+		allr.zgwc,
+		ROUND(allr.zgwc /
+		allr.zg_jh*100,2) AS zgbfb,
+		allr.wg_jh,
+		allr.wgwc,
+		ROUND(allr.wgwc /
+		allr.wg_jh*100,2) AS wgbfb
+		FROM(
+		SELECT
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND (r.today between 2 and 6 )
+		AND
+		SUBSTR(r.team_id,1,6)=#companyName#
+		) allr
+	</select>
+	<select id="queryRouteBanciW" parameterClass="map" resultClass="dto">
+		SELECT
+		r1.route_date as date,
+		r1.routeid AS route_name,
+		r1.runs_day,
+		r1.qrwc,
+		ROUND(r1.qrwc / r1.runs_day*100,2) AS qrbfb,
+		r1.zg_jh,
+		r1.zgwc,
+		ROUND(r1.zgwc / r1.zg_jh*100,2) AS zgbfb,
+		r1.wg_jh,
+		r1.wgwc,
+		ROUND(r1.wgwc / r1.wg_jh*100,2) AS wgbfb
+		FROM(
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS route_date,
+		r.routeid,
+		SUM(r.runs_day) AS
+		runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS
+		zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route
+		r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND (r.today between 2 and 6
+		) AND r.team_id=#team# GROUP BY
+		r.routeid) r1
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS route_date,
+		'合计' AS routeid,
+		r2.runs_day,
+		r2.qrwc,
+		ROUND(r2.qrwc / r2.runs_day*100,2) AS qrbfb,
+		r2.zg_jh,
+		r2.zgwc,
+		ROUND(r2.zgwc / r2.zg_jh*100,2) AS zgbfb,
+		r2.wg_jh,
+		r2.wgwc,
+		ROUND(r2.wgwc / r2.wg_jh*100,2) AS wgbfb
+		FROM(
+		SELECT
+		SUM(r.runs_day) AS runs_day,
+		SUM(r.qrwc) AS qrwc,
+		SUM(r.zg_jh) AS zg_jh,
+		SUM(r.zgwc) AS zgwc,
+		SUM(r.wg_jh) AS wg_jh,
+		SUM(r.wgwc) AS wgwc
+		FROM
+		bancitj_month_route r
+		WHERE r.date BETWEEN #date1#
+		AND #date2# AND
+		(r.today between 2 and 6 ) AND r.team_id=#team#) r2
+	</select>
+
+	<select id="queryCompanyPeakSection" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		ee.deptid AS comp_id,
+		ee.deptname AS comp_name,
+		(SELECT COUNT(routename) FROM meta_dept_route
+		r WHERE r.deptid=ee.deptid) AS
+		route_num,
+		r1.section_runs,
+		r1.sjtgl,
+		ROUND(r1.sjtgl/r1.section_runs*100,2) AS sjwcbfb
+		FROM (SELECT
+		SUBSTR(r.team_id,1,6) AS comp_id,
+		SUM(r.section_runs) AS section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE r.jiange_date
+		BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		GROUP BY comp_id) r1
+		RIGHT JOIN (SELECT
+		e.DEPTID,
+		e.DEPTNAME
+		FROM eadept e
+		WHERE e.DEPTNAME LIKE '%公司') ee
+		ON ee.deptid = r1.comp_id
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' AS comp_id,
+		'合计' AS comp_name,
+		(SELECT COUNT(routename) FROM meta_dept_route r) AS route_num,
+		r2.section_runs,
+		r2.sjtgl,
+		ROUND(r2.sjtgl/r2.section_runs*100,2) AS
+		sjwcbfb
+		FROM (SELECT
+		SUBSTR(r.team_id,1,6) AS comp_id,
+		SUM(r.section_runs) AS section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM
+		gfdmcc_month_route r
+		WHERE r.jiange_date BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		) r2
+	</select>
+
+	<select id="queryTeamPeakSection" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		ee.deptid AS team_id,
+		ee.deptname AS team_name,
+		(SELECT COUNT(routename) FROM meta_dept_route
+		r WHERE r.teamname=ee.deptid)
+		AS route_num,
+		r1.section_runs,
+		r1.sjtgl,
+		ROUND(r1.sjtgl/r1.section_runs*100,2) AS sjwcbfb
+		FROM (SELECT
+		r.team_id,
+		SUM(r.section_runs) AS section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE r.jiange_date BETWEEN #date1#
+		AND
+		#date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND SUBSTR(r.team_id,1,6) = #companyName#
+		GROUP BY r.team_id) r1
+		RIGHT
+		JOIN (SELECT
+		e.DEPTID,
+		e.DEPTNAME
+		FROM eadept e
+		WHERE e.PARENTID =
+		#companyName#) ee
+		ON ee.deptid = r1.team_id
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' AS team_id,
+		'合计' AS team_name,
+		(SELECT COUNT(routename) FROM meta_dept_route r WHERE
+		r.deptid='001003') AS
+		route_num,
+		r2.section_runs,
+		r2.sjtgl,
+		ROUND(r2.sjtgl/r2.section_runs*100,2) AS sjwcbfb
+		FROM (SELECT
+		r.team_id,
+		SUM(r.section_runs) AS section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE r.jiange_date BETWEEN #date1#
+		AND
+		#date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND SUBSTR(r.team_id,1,6) = #companyName#) r2
+	</select>
+
+	<select id="queryRoutePeakSection" parameterClass="map"
+		resultClass="dto">
+
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE ,
+		ee.routename,
+		r1.section_runs,
+		r1.sjtgl,
+		ROUND(r1.sjtgl/r1.section_runs*100,2) AS
+		sjwcbfb
+		FROM (
+		SELECT
+		r.routename,
+		SUM(r.section_runs) AS section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE r.jiange_date
+		BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND r.team_id = #team#
+		GROUP BY r.routename) r1 RIGHT JOIN(SELECT
+		e.routename FROM meta_dept_route
+		e WHERE e.teamname=#team# GROUP BY
+		e.routename) ee ON
+		ee.routename=r1.routename
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE ,
+		'合计' AS routename,
+		r2.section_runs,
+		r2.sjtgl,
+		ROUND(r2.sjtgl/r2.section_runs*100,2) AS
+		sjwcbfb
+		FROM (SELECT
+		r.routeid,
+		r.routename,
+		SUM(r.section_runs) AS
+		section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND r.team_id = #team#) r2
+
+	</select>
+
+	<select id="queryCompanyFlatPeakInterval" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		r1.comp_id,
+		ee.deptname AS comp_name,
+		r1.pfjgs,
+		r1.ccpfjgzds,
+		ROUND(r1.ccpfjgzds/r1.pfjgs*100,2) AS cczb,
+		r1.cc10,
+		r1.cc10_20,
+		r1.cc20
+		FROM(
+		SELECT
+		SUBSTR(r.team_id,1,6) AS comp_id,
+		SUM(r.pfjgs) AS pfjgs,
+		SUM(r.ccpfjgzds) AS ccpfjgzds,
+		SUM(r.cc10) AS cc10,
+		SUM(r.cc10_20) AS
+		cc10_20,
+		SUM(r.cc20) AS cc20
+		FROM pffcjg_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		GROUP BY comp_id
+		) r1 RIGHT
+		JOIN(
+		SELECT e.deptid, e.DEPTNAME FROM eadept e WHERE e.DEPTNAME LIKE
+		'%公司'
+		)ee ON ee.deptid=r1.comp_id
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' AS comp_id,
+		'合计' AS comp_name,
+		r2.pfjgs,
+		r2.ccpfjgzds,
+		ROUND(r2.ccpfjgzds/r2.pfjgs*100,2) AS cczb,
+		r2.cc10,
+		r2.cc10_20,
+		r2.cc20
+		FROM(
+		SELECT
+		SUM(r.pfjgs) AS pfjgs,
+		SUM(r.ccpfjgzds) AS ccpfjgzds,
+		SUM(r.cc10) AS cc10,
+		SUM(r.cc10_20) AS
+		cc10_20,
+		SUM(r.cc20) AS cc20
+		FROM pffcjg_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		)r2
+	</select>
+
+	<select id="queryTeamFlatPeakInterval" parameterClass="map"
+		resultClass="dto">
+
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		r1.team_id,
+		ee.deptname AS team_name,
+		r1.pfjgs,
+		r1.ccpfjgzds,
+		ROUND(r1.ccpfjgzds/r1.pfjgs*100,2) AS cczb,
+		r1.cc10,
+		r1.cc10_20,
+		r1.cc20
+		FROM(
+		SELECT
+		r.team_id AS team_id,
+		SUM(r.pfjgs) AS pfjgs,
+		SUM(r.ccpfjgzds) AS ccpfjgzds,
+		SUM(r.cc10) AS cc10,
+		SUM(r.cc10_20) AS
+		cc10_20,
+		SUM(r.cc20) AS cc20
+		FROM pffcjg_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		AND SUBSTR(r.team_id,1,6) =
+		#companyName#
+		GROUP BY r.team_id
+		) r1 RIGHT JOIN(
+		SELECT
+		e.deptid,
+		e.deptname,
+		e.parentid
+		FROM eadept e
+		WHERE e.PARENTID = #companyName#
+		)ee
+		ON ee.deptid=r1.team_id
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' AS team_id,
+		'合计' AS team_name,
+		r2.pfjgs,
+		r2.ccpfjgzds,
+		ROUND(r2.ccpfjgzds/r2.pfjgs*100,2) AS cczb,
+		r2.cc10,
+		r2.cc10_20,
+		r2.cc20
+		FROM(
+		SELECT
+		SUM(r.pfjgs) AS pfjgs,
+		SUM(r.ccpfjgzds) AS ccpfjgzds,
+		SUM(r.cc10) AS cc10,
+		SUM(r.cc10_20) AS cc10_20,
+		SUM(r.cc20) AS cc20
+		FROM
+		pffcjg_month_route r
+		WHERE r.jiange_date BETWEEN #date1#
+		AND #date2#
+		AND
+		SUBSTR(r.team_id,1,6) = #companyName#
+		)r2
+	</select>
+
+	<select id="queryRouteFlatPeakInterval" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		r1.route_name,
+		r1.pfjgs,
+		r1.ccpfjgzds,
+		ROUND(r1.ccpfjgzds/r1.pfjgs*100,2) AS cczb,
+		r1.cc10,
+		r1.cc10_20,
+		r1.cc20
+		FROM(
+		SELECT
+		r.routename AS route_name,
+		SUM(r.pfjgs) AS pfjgs,
+		SUM(r.ccpfjgzds) AS ccpfjgzds,
+		SUM(r.cc10) AS
+		cc10,
+		SUM(r.cc10_20) AS cc10_20,
+		SUM(r.cc20) AS cc20
+		FROM
+		pffcjg_month_route r
+		WHERE r.jiange_date BETWEEN #date1#
+		AND #date2#
+		AND
+		r.team_id = #team#
+		GROUP BY r.routeid
+		) r1
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'合计' AS route_name,
+		r2.pfjgs,
+		r2.ccpfjgzds,
+		ROUND(r2.ccpfjgzds/r2.pfjgs*100,2) AS cczb,
+		r2.cc10,
+		r2.cc10_20,
+		r2.cc20
+		FROM(
+		SELECT
+		r.routename AS route_name,
+		SUM(r.pfjgs) AS
+		pfjgs,
+		SUM(r.ccpfjgzds) AS ccpfjgzds,
+		SUM(r.cc10) AS cc10,
+		SUM(r.cc10_20) AS cc10_20,
+		SUM(r.cc20) AS cc20
+		FROM pffcjg_month_route r
+		WHERE r.jiange_date BETWEEN #date1#
+		AND #date2#
+		AND r.team_id = #team#
+		)r2
+	</select>
+
+	<select id="queryCompanyPeakSectionInfo" parameterClass="map"
+		resultClass="dto">
+
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE ,
+		ee.routename,
+		r1.section_runs,
+		r1.sjtgl,
+		ROUND(r1.sjtgl/r1.section_runs*100,2) AS
+		sjwcbfb
+		FROM (
+		SELECT
+		r.routeid,
+		r.routename,
+		SUM(r.section_runs) AS
+		section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND SUBSTR(r.team_id,1,6) = #comp_id#
+		GROUP BY r.routename) r1 RIGHT
+		JOIN (SELECT r.routename FROM
+		meta_dept_route r WHERE
+		r.deptid=#comp_id# GROUP BY r.routename) ee ON
+		ee.routename =
+		r1.routename
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE ,
+		'合计' AS
+		routename,
+		r2.section_runs,
+		r2.sjtgl,
+		ROUND(r2.sjtgl/r2.section_runs*100,2) AS sjwcbfb
+		FROM (SELECT
+		r.routeid,
+		r.routename,
+		SUM(r.section_runs) AS section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE r.jiange_date
+		BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND SUBSTR(r.team_id,1,6) = #comp_id#) r2
+
+	</select>
+	<select id="queryTeamPeakSectionInfo" parameterClass="map"
+		resultClass="dto">
+
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE ,
+		ee.routename,
+		r1.section_runs,
+		r1.sjtgl,
+		ROUND(r1.sjtgl/r1.section_runs*100,2) AS
+		sjwcbfb
+		FROM (
+		SELECT
+		r.routeid,
+		r.routename,
+		SUM(r.section_runs) AS
+		section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND r.team_id = #team_id#
+		GROUP BY r.routename) r1 RIGHT JOIN (SELECT
+		r.routename FROM
+		meta_dept_route r WHERE r.teamname=#team_id# GROUP BY
+		r.routename) ee
+		ON ee.routename = r1.routename
+		UNION
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE ,
+		'合计' AS routename,
+		r2.section_runs,
+		r2.sjtgl,
+		ROUND(r2.sjtgl/r2.section_runs*100,2) AS
+		sjwcbfb
+		FROM (SELECT
+		r.routeid,
+		r.routename,
+		SUM(r.section_runs) AS
+		section_runs,
+		SUM(r.sjtgl) AS sjtgl
+		FROM gfdmcc_month_route r
+		WHERE
+		r.jiange_date BETWEEN #date1#
+		AND #date2#
+		<dynamic prepend="">
+			<isNotEmpty prepend="and" property="zwpeak">
+				r.gf_type = #zwpeak#
+			</isNotEmpty>
+		</dynamic>
+		AND r.team_id = #team_id#) r2
+
+	</select>
+
+	<select id="queryCompanyFlatPeakIntervalInfo" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		pl.routeid,
+		jian.jiange_date,
+		jian.jiange_time,
+		jian.productid,
+		jian.productidNext,
+		pl.f_max_inrerval,
+		jian.jiange
+		FROM
+		(SELECT
+		j.route,
+		j.productid,
+		j.productidNext,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8) AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS
+		jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT
+		NULL
+		AND <![CDATA[j.jianGe > 0]]>)
+		jian
+		LEFT JOIN
+		(SELECT
+		a1.comp_id,
+		a1.team_id,
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		p.comp_id,
+		p.team_id,
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE
+		p.route_id = m.routename
+		AND p.comp_id IN
+		(SELECT
+		deptid
+		FROM
+		eadept d
+		WHERE d.DEPTNAME LIKE '%公司')
+		AND p.C = 1) a1,
+		(SELECT
+		p.comp_id,
+		p.team_id,
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE
+		p.route_id = m.routename
+		AND p.comp_id IN
+		(SELECT
+		deptid
+		FROM
+		eadept d
+		WHERE d.DEPTNAME LIKE '%公司')
+		AND p.C = 2) a2
+		WHERE a1.routeid =
+		a2.routeid) pl
+		ON jian.route = pl.routeid
+		WHERE jian.jiange_time BETWEEN
+		pl.m_start AND pl.m_end
+		AND <![CDATA[jian.jiange > pl.f_max_inrerval]]>
+		AND jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date,
+		jian.productid,
+		jian.productidNext,
+		pl.f_max_inrerval,
+		jian.jiange
+	</select>
+
+	<select id="queryTeamFlatPeakIntervalInfo" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		pl.routeid,
+		jian.jiange_date,
+		jian.jiange_time,
+		jian.productid,
+		jian.productidNext,
+		pl.f_max_inrerval,
+		jian.jiange
+		FROM
+		(SELECT
+		j.route,
+		j.productid,
+		j.productidNext,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8) AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS
+		jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT
+		NULL
+		AND <![CDATA[j.jianGe > 0]]>)
+		jian
+		LEFT JOIN
+		(SELECT
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND p.team_id IN
+		(SELECT
+		deptid
+		FROM
+		eadept d
+		WHERE d.PARENTID = #comanyName#)
+		AND p.C = 1)
+		a1,
+		(SELECT
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE
+		p.route_id = m.routename
+		AND p.team_id IN
+		(SELECT
+		deptid
+		FROM
+		eadept d
+		WHERE d.PARENTID = #companyName#)
+		AND p.C = 2) a2
+		WHERE a1.routeid =
+		a2.routeid) pl
+		ON jian.route = pl.routeid
+		WHERE jian.jiange_time BETWEEN
+		pl.m_start AND pl.m_end
+		AND <![CDATA[jian.jiange > pl.f_max_inrerval]]>
+		AND jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date,
+		jian.productid,
+		jian.productidNext,
+		pl.f_max_inrerval,
+		jian.jiange
+	</select>
+
+
+	<select id="queryFlatTeamInfo" parameterClass="map" resultClass="dto">
+
+		SELECT
+		t1.routeid,
+		t6.routename,
+		t1.jiange_date,
+		t1.pfjgs,
+		t2.ccpfjgzds,
+		ROUND(t2.ccpfjgzds / t1.pfjgs * 100,2) AS cczb,
+		t3.cc10,
+		t4.cc10_20,
+		t5.cc20
+		FROM
+		(SELECT
+		pl.routeid,
+		jian.jiange_date,
+		COUNT(1) AS pfjgs
+		FROM
+		(SELECT
+		j.route,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8) AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS
+		jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT
+		NULL
+		AND <![CDATA[ j.jianGe > 0]]>)
+		jian
+		LEFT JOIN
+		(SELECT
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND p.team_id =
+		#team_id#
+		AND p.C = 1) a1,
+		(SELECT
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND p.team_id =
+		#team_id#
+		AND p.C = 2) a2
+		WHERE a1.routeid = a2.routeid) pl
+		ON jian.route
+		= pl.routeid
+		WHERE jian.jiange_time BETWEEN pl.m_start
+		AND pl.m_end
+		AND
+		jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date) t1
+		LEFT
+		JOIN
+		(SELECT
+		pl.routeid,
+		jian.jiange_date,
+		COUNT(*) AS ccpfjgzds
+		FROM
+		(SELECT
+		j.route,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8) AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS
+		jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT
+		NULL
+		AND <![CDATA[ j.jianGe > 0]]>)
+		jian
+		LEFT JOIN
+		(SELECT
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		p.team_id,
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND
+		p.team_id = #team_id#
+		AND p.C = 1) a1,
+		(SELECT
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND
+		p.team_id = #team_id#
+		AND p.C = 2) a2
+		WHERE a1.routeid = a2.routeid) pl
+		ON jian.route = pl.routeid
+		WHERE jian.jiange_time BETWEEN pl.m_start
+		AND pl.m_end
+		AND <![CDATA[ jian.jiange > pl.f_max_inrerval]]>
+		AND jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date) t2
+		ON t1.routeid = t2.routeid
+		LEFT JOIN
+		(SELECT
+		pl.routeid,
+		jian.jiange_date,
+		COUNT(1) AS cc10
+		FROM
+		(SELECT
+		j.route,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8)
+		AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT NULL
+		AND <![CDATA[ j.jianGe > 0]]>)
+		jian
+		LEFT JOIN
+		(SELECT
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		p.team_id,
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND
+		p.team_id = #team_id#
+		AND p.C = 1) a1,
+		(SELECT
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND
+		p.team_id = #team_id#
+		AND p.C = 2) a2
+		WHERE a1.routeid = a2.routeid) pl
+		ON jian.route = pl.routeid
+		WHERE jian.jiange_time BETWEEN pl.m_start
+		AND pl.m_end
+		AND <![CDATA[ (jian.jiange - pl.f_max_inrerval) / f_max_inrerval < 0.1]]>
+		AND <![CDATA[ jian.jiange > pl.f_max_inrerval]]>
+		AND jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date) t3
+		ON t1.routeid = t3.routeid
+		LEFT JOIN
+		(SELECT
+		pl.routeid,
+		jian.jiange_date,
+		COUNT(1) cc10_20
+		FROM
+		(SELECT
+		j.route,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8)
+		AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT NULL
+		AND j.jianGe > 0) jian
+		LEFT JOIN
+		(SELECT
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND p.team_id =
+		#team_id#
+		AND p.C = 1) a1,
+		(SELECT
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND p.team_id =
+		#team_id#
+		AND p.C = 2) a2
+		WHERE a1.routeid = a2.routeid) pl
+		ON jian.route
+		= pl.routeid
+		WHERE jian.jiange_time BETWEEN pl.m_start
+		AND pl.m_end
+		AND <![CDATA[ (jian.jiange - pl.f_max_inrerval) / f_max_inrerval >= 0.1]]>
+		AND <![CDATA[(jian.jiange - pl.f_max_inrerval) / f_max_inrerval < 0.2]]>
+		AND <![CDATA[ jian.jiange > pl.f_max_inrerval]]>
+		AND jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date) t4
+		ON t1.routeid = t4.routeid
+		LEFT JOIN
+		(SELECT
+		pl.routeid,
+		jian.jiange_date,
+		COUNT(1) AS cc20
+		FROM
+		(SELECT
+		j.route,
+		SUBSTR(j.startTime, 1, 10) AS jiange_date,
+		SUBSTR(j.startTime, 12, 8)
+		AS jiange_time,
+		SUBSTR(j.jiange, 4, 2) AS jiange
+		FROM
+		tb_jiange_201406 j
+		WHERE j.position = 1
+		AND j.jiange IS NOT NULL
+		AND <![CDATA[ j.jianGe > 0]]>
+		) jian
+		LEFT JOIN
+		(SELECT
+		a1.routeid,
+		a1.m_start,
+		a2.m_end,
+		a1.f_max_inrerval
+		FROM
+		(SELECT
+		m.routeid,
+		p.m_start,
+		p.f_max_inrerval
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND
+		p.team_id = #team_id#
+		AND p.C = 1) a1,
+		(SELECT
+		m.routeid,
+		p.m_end
+		FROM
+		plan2_month p,
+		meta_dept_route m
+		WHERE p.route_id = m.routename
+		AND
+		p.team_id = #team_id#
+		AND p.C = 2) a2
+		WHERE a1.routeid = a2.routeid) pl
+		ON jian.route = pl.routeid
+		WHERE jian.jiange_time BETWEEN pl.m_start
+		AND pl.m_end
+		AND <![CDATA[ (jian.jiange - pl.f_max_inrerval) / f_max_inrerval >= 0.2]]>
+		AND <![CDATA[ jian.jiange > pl.f_max_inrerval]]>
+		AND jian.jiange_date = #date#
+		GROUP BY pl.routeid,
+		jian.jiange_date) t5
+		ON t1.routeid = t5.routeid
+		LEFT JOIN meta_dept_route t6
+		ON t6.routeid =
+		t1.routeid
+	</select>
+
+	<select id="queryCompanyOver" parameterClass="map" resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		r1.comp_id AS com_id,
+		ee.deptname AS comp_name,
+		r1.ccnum+r1.chuannum as allnum,
+		r1.chuannum as
+		chuannum,
+		r1.ccnum as ccnum
+		FROM (
+		SELECT e.deptid, e.DEPTNAME FROM
+		eadept e WHERE e.DEPTNAME LIKE '%公司'
+		) ee LEFT JOIN (
+		SELECT
+		SUBSTR(r.team_id,1,6) AS comp_id,
+		SUM(r.chuannum) AS chuannum,
+		SUM(r.ccnum) AS ccnum
+		FROM chuanche_month_route r
+		WHERE r.ccdate BETWEEN
+		#date1#
+		AND #date2#
+		GROUP BY comp_id
+		)r1 ON ee.deptid=r1.comp_id
+		UNION
+		select
+		r2.date,
+		r2.comp_id,
+		r2.comp_name,
+		r2.chuannum+r2.ccnum as allnum,
+		r2.chuannum,
+		r2.ccnum
+		from(
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' AS comp_id,
+		'合计' AS comp_name,
+		SUM(r.chuannum) AS chuannum,
+		SUM(r.ccnum) AS ccnum
+		FROM chuanche_month_route r
+		WHERE r.ccdate BETWEEN
+		#date1#
+		AND #date2#) r2
+	</select>
+
+	<select id="queryTeamOver" parameterClass="map" resultClass="dto">
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		r1.team_id,
+		ee.deptname AS
+		team_name,
+		r1.chuannum+r1.ccnum as allnum,
+		r1.chuannum,
+		r1.ccnum
+		FROM (
+		SELECT
+		e.deptid,
+		e.deptname,
+		e.parentid
+		FROM eadept e
+		WHERE e.PARENTID =
+		#companyName#
+		) ee LEFT JOIN (
+		SELECT
+
+		r.team_id,
+		SUM(r.ccnum) AS ccnum,
+		SUM(r.chuannum) AS chuannum
+		FROM chuanche_month_route r
+		WHERE r.ccdate
+		BETWEEN #date1#
+		AND #date2#
+		AND SUBSTR(r.team_id,1,6)= #companyName#
+		GROUP BY r.team_id
+		)r1 ON r1.team_id=ee.deptid
+		UNION
+		select
+		r2.date,
+		r2.team_id,
+		r2.team_name,
+		r2.chuannum+r2.ccnum as allnum,
+		r2.chuannum,
+		r2.ccnum
+		from(
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' AS
+		team_id,
+		'合计' AS team_name,
+		SUM(r.chuannum) AS chuannum,
+		SUM(r.ccnum) AS
+		ccnum
+		FROM chuanche_month_route r
+		WHERE r.ccdate BETWEEN #date1#
+		AND
+		#date2#
+		AND SUBSTR(r.team_id,1,6)= #companyName#) r2
+	</select>
+	<select id="queryRouteOver" parameterClass="map" resultClass="dto">
+		select
+		r1.date,
+		r1.team_id,
+		r1.route_name,
+		r1.chuannum+r1.ccnum as allnum,
+		r1.chuannum,
+		r1.ccnum
+		from(SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		r.team_id,
+		r.routename AS route_name,
+		SUM(r.chuannum) as chuannum,
+		SUM(r.ccnum) as ccnum
+		FROM chuanche_month_route r
+		WHERE r.ccdate BETWEEN
+		#date1#
+		AND #date2#
+		AND r.team_id = #team#
+		GROUP BY r.routename) r1
+		UNION
+		select
+		r2.date,
+		r2.team_id,
+		r2.route_name,
+		r2.chuannum+r2.ccnum as allnum,
+		r2.chuannum,
+		r2.ccnum
+		from(
+		SELECT
+		CONCAT(#date1#,'~',#date2#) AS DATE,
+		'-1' as team_id,
+		'合计' AS route_name,
+		SUM(r.chuannum) as chuannum,
+		SUM(r.ccnum) as ccnum
+		FROM chuanche_month_route r
+		WHERE r.ccdate BETWEEN
+		#date1#
+		AND #date2#
+		AND r.team_id = #team#) r2
+	</select>
+
+	<select id="queryWeekendBanci" parameterClass="map" resultClass="dto">
+
+		SELECT
+		s1.deptid,
+		s1.teamname,
+		s1.routename,
+		date_format(s1.date,'%Y-%m-%d') as date,
+		DAYOFWEEK(s1.date)-1 AS zhou,
+		s2.weekendtime1_p,
+		ROUND(s2.one_d / s1.zong * 100, 2) AS one_bl,
+		s3.weekendtime2_p,
+		ROUND(s3.two_d / s1.zong * 100, 2) AS two_bl,
+		s4.weekendtime3_p,
+		ROUND(s4.three_d / s1.zong * 100, 2) AS three_bl
+		FROM
+		(SELECT
+		a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		COUNT(1) AS zong
+		FROM
+		(SELECT
+		m.deptid,
+		m.teamname,
+		m.routename,
+		t.productid,
+		t.time,
+		t.date
+		FROM
+		meta_dept_route m
+		LEFT JOIN tb_banci_201407 t
+		ON m.routeid =
+		t.routeid
+		WHERE t.date = #date#
+		AND m.deptid = #companyName#
+		AND
+		m.teamname = #team#) a
+		LEFT JOIN
+		(SELECT
+		comp_id,
+		team_id,
+		route_id,
+		weekendtime1,
+		weekendtime1_p,
+		weekendtime2_2,
+		weekendtime2_p,
+		weekendtime3_1,
+		weekendtime3_2,
+		weekendtime3_p
+		FROM
+		plan2_month p
+		WHERE
+		p.weekendtime1 IS NOT NULL
+		AND p.date = SUBSTR(#date#, 1, 7)
+		AND
+		p.comp_id = #companyName#
+		AND p.team_id = #team#
+		AND p.C = '1') b
+		ON
+		a.deptid = b.comp_id
+		AND a.teamname = b.team_id
+		AND a.routename =
+		b.route_id
+		GROUP BY a.deptid,
+		a.teamname,
+		a.routename,
+		a.date) s1
+		LEFT JOIN
+		(SELECT
+		a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		b.weekendtime1,
+		b.weekendtime1_p,
+		COUNT(1) AS one_d
+		FROM
+		(SELECT
+		m.deptid,
+		m.teamname,
+		m.routename,
+		t.productid,
+		t.time,
+		t.date
+		FROM
+		meta_dept_route m
+		LEFT JOIN
+		tb_banci_201407 t
+		ON m.routeid = t.routeid
+		WHERE t.date = #date#
+		AND
+		m.deptid = #companyName#
+		AND m.teamname = #team#) a
+		LEFT JOIN
+		(SELECT
+		comp_id,
+		team_id,
+		route_id,
+		weekendtime1,
+		weekendtime1_p,
+		weekendtime2_2,
+		weekendtime2_p,
+		weekendtime3_1,
+		weekendtime3_2,
+		weekendtime3_p
+		FROM
+		plan2_month p
+		WHERE p.weekendtime1 IS NOT NULL
+		AND p.date =
+		SUBSTR(#date#, 1, 7)
+		AND p.comp_id = #companyName#
+		AND p.team_id =
+		#team#
+		AND p.C = '1') b
+		ON a.deptid = b.comp_id
+		AND a.teamname =
+		b.team_id
+		AND a.routename = b.route_id
+		WHERE <![CDATA[ a.time < b.weekendtime1]]>
+		GROUP BY a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		b.weekendtime1,
+		b.weekendtime1_p) s2
+		ON s1.routename = s2.routename
+		LEFT JOIN
+		(SELECT
+		a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		b.weekendtime2_2,
+		b.weekendtime2_p,
+		COUNT(1) AS two_d
+		FROM
+		(SELECT
+		m.deptid,
+		m.teamname,
+		m.routename,
+		t.productid,
+		t.time,
+		t.date
+		FROM
+		meta_dept_route m
+		LEFT JOIN
+		tb_banci_201407 t
+		ON m.routeid = t.routeid
+		WHERE t.date = #date#
+		AND
+		m.deptid = #companyName#
+		AND m.teamname = #team#) a
+		LEFT JOIN
+		(SELECT
+		comp_id,
+		team_id,
+		route_id,
+		weekendtime1,
+		weekendtime1_p,
+		weekendtime2_2,
+		weekendtime2_p,
+		weekendtime3_1,
+		weekendtime3_2,
+		weekendtime3_p
+		FROM
+		plan2_month p
+		WHERE p.weekendtime1 IS NOT NULL
+		AND p.date =
+		SUBSTR(#date#, 1, 7)
+		AND p.comp_id = #companyName#
+		AND p.team_id =
+		#team#
+		AND p.C = '1') b
+		ON a.deptid = b.comp_id
+		AND a.teamname =
+		b.team_id
+		AND a.routename = b.route_id
+		WHERE a.time BETWEEN
+		b.weekendtime1
+		AND b.weekendtime2_2
+		GROUP BY a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		b.weekendtime2_2,
+		b.weekendtime2_p) s3
+		ON
+		s1.routename = s3.routename
+		LEFT JOIN
+		(SELECT
+		a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		b.weekendtime3_1,
+		b.weekendtime3_2,
+		b.weekendtime3_p,
+		COUNT(1) AS three_d
+		FROM
+		(SELECT
+		m.deptid,
+		m.teamname,
+		m.routename,
+		t.productid,
+		t.time,
+		t.date
+		FROM
+		meta_dept_route m
+		LEFT JOIN
+		tb_banci_201407 t
+		ON m.routeid = t.routeid
+		WHERE t.date = #date#
+		AND
+		m.deptid = #companyName#
+		AND m.teamname = #team#) a
+		LEFT JOIN
+		(SELECT
+		comp_id,
+		team_id,
+		route_id,
+		weekendtime1,
+		weekendtime1_p,
+		weekendtime2_2,
+		weekendtime2_p,
+		weekendtime3_1,
+		weekendtime3_2,
+		weekendtime3_p
+		FROM
+		plan2_month p
+		WHERE p.weekendtime1 IS NOT NULL
+		AND p.date =
+		SUBSTR(#date#, 1, 7)
+		AND p.comp_id = #companyName#
+		AND p.team_id =
+		#team#
+		AND p.C = '1') b
+		ON a.deptid = b.comp_id
+		AND a.teamname =
+		b.team_id
+		AND a.routename = b.route_id
+		WHERE a.time BETWEEN
+		b.weekendtime3_1
+		AND b.weekendtime3_2
+		GROUP BY a.deptid,
+		a.teamname,
+		a.routename,
+		a.date,
+		b.weekendtime3_1,
+		b.weekendtime3_2,
+		b.weekendtime3_p) s4
+		ON s1.routename = s4.routename
+	</select>
+
+	<select id="queryBanciExecute" parameterClass="map" resultClass="dto">
+		SELECT
+		rowid,
+		#selectroute# AS routeid,
+		productid,
+		DATE_FORMAT(DATE,'%Y-%m-%d') AS DATE,
+		TIME_FORMAT(TIME,'%H:%i:%s') AS
+		TIME,
+		startstation,
+		CONCAT(CONVERT(startstation,char),CONVERT('-',char),CONVERT(
+		(SELECT
+		station_name FROM
+		route_station_view WHERE route_id=#selectroute# AND
+		station_id_double=startstation)
+		,char)) AS STARTS,
+		endstation,
+		CONCAT(
+		CONVERT(endstation,char),
+		CONVERT('-',char),
+		CONVERT(
+		(SELECT
+		station_name FROM route_station_view
+		WHERE route_id=#selectroute# AND
+		station_id_double=endstation)
+		,char)
+		) AS
+		ENDS,
+		upordown,
+		isQuJian
+		FROM
+		$table$ t
+		WHERE t.date = #datetime#
+		AND t.upordown = #updown_name#
+		AND
+		t.routeid = (SELECT
+		routeid
+		FROM
+		meta_dept_route
+		WHERE routename =
+		#selectroute#)
+		AND (t.error = '0'
+		OR
+		t.error = '3')
+		ORDER BY
+		productid,TIME
+
+	</select>
+
+	<select id="countqueryBanciExecute" parameterClass="map"
+		resultClass="java.lang.Integer">
+		SELECT
+		COUNT(*)
+		FROM $table$ t
+		WHERE t.date =
+		#datetime#
+		AND
+		t.upordown = '1'
+		AND t.routeid = (SELECT
+		routeid
+		FROM
+		meta_dept_route
+		WHERE routename = #selectroute#)
+		AND (t.error = '0'
+		OR
+		t.error = '3')
+	</select>
+
+	<select id="queryBanciJianGePlan" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		#route_id# as routename,
+		t.updown as upordown,
+		#date#
+		as date,
+		CONCAT(SUBSTR(t.jianGe,1,2)*60+SUBSTR(t.jianGe,4,2),'|',SUBSTR(t.jianGe,7,2)*1)
+		AS jiange,
+		(SELECT
+		s.station_name
+		FROM station_info s
+		WHERE s.station_id =
+		t.phyposition) AS phyposition,
+		t.productid,
+		SUBSTR(t.startTime,12,8) AS
+		TIME,
+		'' AS jh_fcsk,
+		'' AS jh_jiange
+		FROM $table$ t
+		WHERE
+		t.ROUTE = (SELECT
+		routeid
+		FROM meta_dept_route m
+		WHERE m.routename =
+		#route_id#)
+		AND
+		SUBSTR(t.startTime,1,10) = #date#
+		AND t.upDown =
+		#updown_name#
+		ORDER BY
+		SUBSTR(t.startTime,12,8)
+	</select>
+
+	<select id="countqueryBanciJianGePlan" parameterClass="map"
+		resultClass="java.lang.Integer">
+		SELECT
+		COUNT(*)
+		FROM $table$ t
+		WHERE t.ROUTE =
+		(SELECT
+		routeid
+		FROM meta_dept_route m
+		WHERE m.routename = #route_id#)
+		AND
+		SUBSTR(t.startTime,1,10) = #date#
+		AND t.upDown = #updown_name#
+		ORDER BY
+		SUBSTR(t.startTime,12,8)
+	</select>
+
+	<select id="getbancimaxdate" parameterClass="map" resultClass="dto">
+		SELECT
+		date_format(b.date,'%Y-%m-%d') as date
+		FROM bancitj_month_route b
+		WHERE b.qrwc IS NOT NULL
+		ORDER BY b.date DESC
+		LIMIT 0,1
+	</select>
+
+	<select id="getbancimindate" parameterClass="map" resultClass="dto">
+		SELECT
+		date_format(b.date,'%Y-%m-%d') as date
+		FROM bancitj_month_route b
+		WHERE b.qrwc IS NOT NULL
+		ORDER BY b.date
+		LIMIT 0,1
+	</select>
+
+	<select id="table_banci_xxxx_max" resultClass="java.lang.String">
+	    <![CDATA[SELECT
+  		table_name
+		FROM information_schema.COLUMNS 
+		WHERE TABLE_SCHEMA='bus'
+    	AND table_name like 'tb_banci_______' GROUP BY table_name ORDER BY table_name desc limit 0,1]]>
+	</select>
+
+	<select id="getbanci_table_mindate" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		date_format(b.date,'%Y-%m-%d') as date
+		FROM
+		tb_banci_201406 b
+		WHERE DATE IS NOT NULL
+		ORDER BY b.date
+		LIMIT 0,1
+	</select>
+
+	<select id="getbanci_table_maxdate" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		date_format(b.date,'%Y-%m-%d') as date
+		FROM
+		$maxtable$ b
+		WHERE DATE IS NOT NULL
+		ORDER BY b.date DESC
+		LIMIT 0,1
+	</select>
+
+	<select id="queryloginusersdeptid" parameterClass="map"
+		resultClass="dto">
+		SELECT deptid FROM eauser e WHERE e.USERID=#loginuserid#
+	</select>
+
+	<select id="queryCompanyDatasByClass" parameterClass="map"
+		resultClass="dto">
+		SELECT DEPTID as value, DEPTNAME as text
+		FROM eadept t where 1=1 and
+		t.enabled='1'
+		<dynamic>
+
+			<isNotEmpty prepend="and" property="deptid">
+				DEPTID =
+				substr(#deptid#,1,6)
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="queryrouteDatasByClassCompany" parameterClass="map"
+		resultClass="dto">
+		SELECT id as value, routename as text
+		FROM meta_dept_route t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				DEPTID = #deptid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="queryrouteDatasByClassTeam" parameterClass="map"
+		resultClass="dto">
+		SELECT id as value, routename as text
+		FROM meta_dept_route t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				teamname = #deptid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="queryTeamDatasByClassTeam" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		deptid AS VALUE,
+		deptname AS TEXT
+		FROM eadept t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="deptid">
+				t.deptid = #deptid#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+</sqlMap>

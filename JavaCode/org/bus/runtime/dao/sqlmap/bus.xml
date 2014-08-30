@@ -1,0 +1,1506 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Bus">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo" type="org.g4studio.system.admin.web.tag.vo.UserVo"/>
+
+	
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String" mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list"  jdbcType="ORACLECURSOR" javaType="java.sql.ResultSet"  mode="OUT" resultMap="cur_dto"/>
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String" mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String" mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR"/>
+		<result column="fyze" property="fyze" jdbcType="DECIMAL"/>
+	</resultMap>
+	<procedure id="g4_prc_cursor_demo" parameterMap="prcdto_cur">{call g4_prc_cursor_demo(?,?,?,?)}</procedure>
+	
+	
+	<select id="countStddev_bak" parameterClass="map" resultClass="dto">
+		SELECT 
+		
+		time_format(SEC_TO_TIME(stddev(TIME_TO_SEC(t.StartToMiddle))),'%H.%i.%s') as downpuls,
+		time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.StartToMiddle))),'%H.%i.%s')
+		 as downav  ,
+
+
+		time_format(SEC_TO_TIME(stddev(TIME_TO_SEC(t.MiddleToEnd))),'%H.%i.%s') as uppuls,
+			time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.MiddleToEnd))),'%H.%i.%s') as upav,
+			
+			t.ROUTEID as routeName FROM bus.tb_triptime t where 1=1   
+			<dynamic>
+			<isNotEmpty prepend="AND" property="selectroute">
+				t.ROUTEID = #selectroute#
+			</isNotEmpty>
+			
+			 group by t.ROUTEID
+		</dynamic>
+		
+		
+		
+		
+	</select>
+	
+	
+	<select id="countStddev" parameterClass="map" resultClass="dto">
+		
+		select  aa.ROUTEID as routename, aa.time1,bb.time2,cc.time3,(time1+time2+time3) as totaltime ,aa.Weather as weather,
+		(aa.avtime1+bb.avtime2+cc.avtime3) as avtime, aa.UporDown as upordown,aa.TimeSection as timeinterval,aa.TimeInterval as timenum
+		
+
+			from 
+			( SELECT 
+			t.TimeSection,t.UporDown,t.TimeInterval,t.Weather,
+
+			time_format(SEC_TO_TIME(stddev((TIME_TO_SEC(t.triptime)*#bit1#))),'%i.%s') as time1,
+			time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.triptime)*#bit1#)),'%i.%s') as avtime1,
+
+			
+
+			t.ROUTEID  FROM bus.tb_triptime t where 1=1 
+			
+			<dynamic>
+			
+			<isNotEmpty prepend="AND" property="route">
+				t.ROUTEID = #route#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="updown_name">
+				t.UporDown = #updown_name#
+			</isNotEmpty>
+			
+			</dynamic>
+ 				and   
+ 				  <![CDATA[
+             t.Startdate>str_to_date("2014-03-26 ",'%Y-%m-%d ')  and t.Startdate<str_to_date("2014-04-05 ",'%Y-%m-%d ')
+ 			
+      ]]>
+ 					
+ 				group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval) aa,
+
+
+			( SELECT 
+			t.TimeSection,t.UporDown,t.TimeInterval,t.Weather,
+
+ 
+			time_format(SEC_TO_TIME(stddev((TIME_TO_SEC(t.triptime)*#bit2#))),'%i.%s') as time2,
+			time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.triptime)*#bit2#)),'%i.%s') as avtime2,
+
+			
+
+				t.ROUTEID  FROM bus.tb_triptime t where 1=1 
+				<dynamic>
+			
+			<isNotEmpty prepend="AND" property="route">
+				t.ROUTEID = #route#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="updown_name">
+				t.UporDown = #updown_name#
+			</isNotEmpty>
+			</dynamic>
+ 				 and   
+ 				 <![CDATA[
+ 				
+ 				t.Startdate>str_to_date("2014-04-05 ",'%Y-%m-%d ')  and t.Startdate<str_to_date("2014-04-15 ",'%Y-%m-%d ') 
+ 				]]>
+ 				
+ 				group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval ) bb,
+
+			( SELECT 
+				t.TimeSection,t.UporDown,t.TimeInterval,t.Weather,
+				time_format(SEC_TO_TIME(stddev((TIME_TO_SEC(t.triptime)*#bit3#))),'%i.%s') as  time3,
+				time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.triptime)*#bit3#)),'%i.%s') as avtime3,
+				
+
+				t.ROUTEID  FROM bus.tb_triptime t where 1=1 
+				<dynamic>
+			
+			<isNotEmpty prepend="AND" property="route">
+				t.ROUTEID = #route#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="updown_name">
+				t.UporDown = #updown_name#
+			</isNotEmpty>
+			</dynamic>
+ 				 and 
+ 				<![CDATA[
+ 				  t.Startdate>str_to_date("2014-04-15 ",'%Y-%m-%d ')  and t.Startdate<str_to_date("2014-04-25 ",'%Y-%m-%d ') 
+ 				
+ 				]]>
+ 				group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval ) cc
+
+			where aa.TimeInterval = bb.TimeInterval and bb.TimeInterval = cc.TimeInterval
+
+	</select>
+	
+	
+		<select id="compareBustime" parameterClass="map" resultClass="dto">
+
+	select a.ROUTEID as routename , a.rundate  ,a.StartTime,as_triptime as triptime ,a.productid,
+b.TimeInterval ,b.totaltime,b.weather,b.avtime,b.upordown,b.timeinterval
+
+  	 from  (SELECT n.productid,time_format(SEC_TO_TIME((TIME_TO_SEC(n.TripTime))),'%H.%i.%s')    as as_triptime ,
+  	 n.Startdate as rundate,time_format(n.StartTime,'%H.%i.%s') as StartTime,n.ROUTEID as ROUTEID,n.timeinterval 
+
+ FROM tb_triptime n where n.ROUTEID =#selectroute#  and  n.Startdate = #datetime#
+ 	<dynamic>
+ 			<isNotEmpty prepend="AND" property="updown_name">
+				n.UporDown = #updown_name#
+			</isNotEmpty>
+	</dynamic>
+ )   a 
+left join (
+			select  aa.ROUTEID as routename, aa.time1,bb.time2,cc.time3,(time1+time2+time3) as totaltime ,aa.Weather as weather,
+		(aa.avtime1+bb.avtime2+cc.avtime3) as avtime, aa.UporDown as upordown,aa.TimeSection as timeinterval,aa.TimeInterval as timenum
+		
+
+			from 
+			( SELECT 
+			t.TimeSection,t.UporDown,t.TimeInterval,t.Weather,t.StartTime,
+
+			time_format(SEC_TO_TIME(stddev((TIME_TO_SEC(t.triptime)*#bit1#))),'%i.%s') as time1,
+			time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.triptime)*#bit1#)),'%i.%s') as avtime1,
+
+			
+
+			t.ROUTEID  FROM bus.tb_triptime t where 1=1 
+			
+			<dynamic>
+			
+			<isNotEmpty prepend="AND" property="route">
+				t.ROUTEID = #selectroute#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="updown_name">
+				t.UporDown = #updown_name#
+			</isNotEmpty>
+			
+			</dynamic>
+ 				and   
+ 				  <![CDATA[
+             t.Startdate>str_to_date("2014-03-26 ",'%Y-%m-%d ')  and t.Startdate<str_to_date("2014-04-05 ",'%Y-%m-%d ')
+ 			
+      ]]>
+ 					
+ 				group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval) aa,
+
+
+			( SELECT 
+			t.TimeSection,t.UporDown,t.TimeInterval,t.Weather,t.StartTime,
+
+ 
+			time_format(SEC_TO_TIME(stddev((TIME_TO_SEC(t.triptime)*#bit2#))),'%i.%s') as time2,
+			time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.triptime)*#bit2#)),'%i.%s') as avtime2,
+
+			
+
+				t.ROUTEID  FROM bus.tb_triptime t where 1=1 
+				<dynamic>
+			
+			<isNotEmpty prepend="AND" property="route">
+				t.ROUTEID = #selectroute#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="updown_name">
+				t.UporDown = #updown_name#
+			</isNotEmpty>
+			</dynamic>
+ 				 and   
+ 				 <![CDATA[
+ 				
+ 				t.Startdate>str_to_date("2014-04-05 ",'%Y-%m-%d ')  and t.Startdate<str_to_date("2014-04-15 ",'%Y-%m-%d ') 
+ 				]]>
+ 				
+ 				group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval ) bb,
+
+			( SELECT 
+				t.TimeSection,t.UporDown,t.TimeInterval,t.Weather,t.StartTime,
+				time_format(SEC_TO_TIME(stddev((TIME_TO_SEC(t.triptime)*#bit3#))),'%i.%s') as  time3,
+				time_format(SEC_TO_TIME(avg(TIME_TO_SEC(t.triptime)*#bit3#)),'%i.%s') as avtime3,
+				
+
+				t.ROUTEID  FROM bus.tb_triptime t where 1=1 
+				<dynamic>
+			
+			<isNotEmpty prepend="AND" property="route">
+				t.ROUTEID = #selectroute#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="updown_name">
+				t.UporDown = #updown_name#
+			</isNotEmpty>
+			</dynamic>
+ 				 and 
+ 				<![CDATA[
+ 				  t.Startdate>str_to_date("2014-04-15 ",'%Y-%m-%d ')  and t.Startdate<str_to_date("2014-04-25 ",'%Y-%m-%d ') 
+ 				
+ 				]]>
+ 				group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval ) cc
+
+			where aa.TimeInterval = bb.TimeInterval and bb.TimeInterval = cc.TimeInterval
+	
+
+) b on a.ROUTEID = b.routename and a.timeinterval =b.timenum
+	</select>
+	
+	<select id="countcompareBustime" parameterClass="map" resultClass="java.lang.Integer">
+	
+	select count(*)
+  	 from  (SELECT * 
+
+ FROM tb_triptime n where n.ROUTEID =#selectroute#  and  n.Startdate = #datetime#) a 
+
+	</select>
+	
+	<select id="queryCompanyDatas" parameterClass="map" resultClass="dto">
+		SELECT DEPTID as value, DEPTNAME as text
+		FROM eadept t where 1=1  and t.enabled='1'  
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="deptlength">
+				length(DEPTID) = $deptlength$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="queryrouteDatas" parameterClass="map" resultClass="dto">
+		SELECT id as value, routename as text
+		FROM meta_dept_route t 
+		<dynamic prepend="where">
+			
+			<isNotEmpty prepend="and" property="deptid">
+				DEPTID = $deptid$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="queryroutetimeDatas" parameterClass="map" resultClass="dto">
+		SELECT t.route_id as route ,CONCAT(t.m_start,'-',t.m_end) as timearea,t.c,t.m_start,t.m_end   FROM bus.plan2 t 
+	
+		<dynamic prepend="where">
+			
+			<isNotEmpty prepend="and" property="route">
+				 t.route_id = #route#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="datetime">
+				 t.date =STR_TO_DATE(#datetime#,'%Y-%m-%d')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+	
+	<select id="querysitespeed" parameterClass="map" resultClass="dto">
+		SELECT *
+		FROM tb_station_speed  t 
+		<dynamic prepend="where">
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.route = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countquerysitespeed" parameterClass="map" resultClass="java.lang.Integer">
+		select count(*)
+		FROM tb_station_speed  t 
+		<dynamic prepend="where">
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.route = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+	
+	
+	<select id="querybustour" parameterClass="map" resultClass="dto">
+		SELECT t.routeid,t.date,t.productid,t.stationnum,t.upordown,time_format(t.time,'%H.%i.%s') as time
+		FROM tb_banci  t where (t.upordown = '1' or  t.upordown = '3')
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date =  str_to_date(#datetime#,'%Y-%m-%d ')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countquerybustour" parameterClass="map" resultClass="java.lang.Integer">
+		select count(*)
+		FROM tb_banci  t  where (t.upordown = '1' or  t.upordown = '3')
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date = str_to_date(#datetime#,'%Y-%m-%d ')
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+	
+	
+		<select id="querybustourReport" parameterClass="map" resultClass="dto">
+		select count(b.hour) as num,b.routeid ,b.hour from (SELECT   time_format(t.time,'%H') as hour, t.routeid, t.stationnum 
+
+	FROM bus.tb_banci  t 
+	
+	<dynamic prepend="where">
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="upordown">
+				t.upordown = #upordown#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	
+	) b group by b.hour 
+		
+		
+		
+	</select>
+	
+	
+	<select id="queryoverspeed" parameterClass="map" resultClass="dto">
+		SELECT t.routeid,t.date,time_format(t.time,'%H.%i.%s') as time,t.productid,t.nowvalue,t.station ,(t.nowvalue-t.standard)/t.standard*100 as overrate
+		FROM tb_alert_03_04  t  where 1=1 and t.type= '31'
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countqueryoverspeed" parameterClass="map" resultClass="java.lang.Integer">
+		select count(*)
+		FROM tb_alert_03_04  t where 1=1 and t.type= '31'
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+	<select id="countoverspeedbit" parameterClass="map" resultClass="java.lang.Integer">
+		select count(*)
+		FROM tb_alert_03_04  t where 1=1 and t.type= '31'
+		<dynamic >
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="bit1">
+		<![CDATA[
+ 				 (t.nowvalue-t.standard)/t.standard>#bit1# 
+ 				
+ 				]]>
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="bit2">
+		<![CDATA[
+ 				 (t.nowvalue-t.standard)/t.standard<#bit2# 
+ 				
+ 				]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+	
+	
+	
+	<select id="querybusUse" parameterClass="map" resultClass="dto">
+	select route,count(e.PRODUCTID) as usenum,#datetime# as rundate from(
+ 		select distinct(a.PRODUCTID ), a.Route from meta_site_route a where a.route in (
+
+		select b.routeid from meta_dept_route b 
+		<dynamic prepend="where">
+			<isNotEmpty prepend="and" property="companyName">
+				 b.deptid= #companyName#
+			</isNotEmpty>
+			
+			
+		 </dynamic>
+		)	
+		
+		<dynamic >
+			<isNotEmpty prepend="and" property="datetime1">
+			<![CDATA[
+ 				 a.StartTime> STR_TO_DATE(#datetime1#,'%Y-%m-%d %H:%i:%s')
+				
+ 				]]>
+				
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="datetime2">
+			<![CDATA[
+ 				 
+				  a.StartTime< STR_TO_DATE(#datetime2#,'%Y-%m-%d %H:%i:%s')
+ 				]]>
+				
+			</isNotEmpty>
+		 </dynamic>
+
+	)e 
+	group by e.route
+	</select>
+	
+	
+	<select id="querybusUserecord" parameterClass="map" resultClass="dto">
+	SELECT distinct(t.PRODUCTID),t.route FROM bus.meta_site_route t 
+<dynamic prepend="where">
+			<isNotEmpty prepend="and" property="route">
+				 t.Route= #route#
+			</isNotEmpty>
+			
+			
+		 </dynamic>
+ <isNotEmpty prepend="and" property="datetime1">
+			<![CDATA[
+ 				 t.StartTime> STR_TO_DATE(#datetime1#,'%Y-%m-%d %H:%i:%s')
+				
+ 				]]>
+				
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="datetime2">
+			<![CDATA[
+ 				 
+				  t.StartTime< STR_TO_DATE(#datetime2#,'%Y-%m-%d %H:%i:%s')
+ 				]]>
+				
+			</isNotEmpty>
+
+
+	</select>
+	
+	
+		
+	<select id="queryroutespeed" parameterClass="map" resultClass="dto">
+		  
+	select * from (
+
+	SELECT t.TimeSection,t.UporDown,t.TimeInterval,t.ROUTEID ,t.data_cft,t.Startdate as rundate,
+
+	avg(t.Speed) as avspeed
+
+FROM bus.tb_triptime12 t where  t.Speed>0 
+<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.Startdate = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+
+group by t.ROUTEID  ,t.TimeInterval order by t.TimeInterval )a
+
+left join  (select b.SpeedAVG as standspeed,b.Type,b.TimeInterval,b.ROUTEID from tb_tripspeedavg b ) c on a.data_cft = c.Type and a.TimeInterval = c.TimeInterval 
+and a.ROUTEID = c.routeid order by a.TimeInterval
+		
+	</select>
+	
+	
+	
+	
+		<select id="queryroutespeedtop" parameterClass="map" resultClass="dto">
+		  
+		SELECT avg(t.speed) as topspeed ,t.ROUTEID,t.UporDown,t.Startdate FROM bus.tb_triptime12 t where 
+		
+		<![CDATA[
+				 t.TimeInterval >#timeinterval1#  and t.TimeInterval <#timeinterval2# 
+ 				]]>
+ 			and t.speed >0 
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.Startdate = #datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="UporDown">
+				t.UporDown = #UporDown#
+			</isNotEmpty>
+		</dynamic>
+
+		group by t.routeid  order by topspeed desc  LIMIT 10;
+		
+	</select>
+	
+	
+	
+	<select id="addtimearea" parameterClass="map" resultClass="dto">
+		  
+		SELECT time_format(t.StartTime,'%H.%i.%s') as time,t.RowID as id FROM meta_site_route t 
+		where t.StartTime >STR_TO_DATE('2012-03-26 06:41:57','%Y-%m-%d %H:%i:%s')  order by time asc
+		
+	</select>
+	
+	<update id="updateByjsb" parameterClass="map">
+		UPDATE meta_site_route SET TimeInterval = #timeinterval# WHERE rowid = #id#
+	</update>
+	
+	
+	<select id="getavgtime" parameterClass="map" resultClass="dto">
+		  
+		SELECT t.rowid as id,t.TimeSection as time ,t.TimeInterval FROM bus.meta_site_routeavg t
+		
+	</select>
+	
+	
+	<select id="querystoptime" parameterClass="map" resultClass="dto">
+		select * from(
+select a.stoptime as stime,a.route,b.StopTimeAVG as avstime,b.StopTimeAVG_q as avstime_q ,
+(a.stoptime-b.StopTimeAVG-2*b.StopTimeAVG_q) as cha ,b.TimeSection,a.PRODUCTID,a.UniqueNum
+ from 
+
+( SELECT t.route,t.StopTime,t.data_ctf,t.StartTime,t.UniqueNum,t.TimeInterval,t.PRODUCTID
+ FROM bus.meta_site_route t 
+
+where 
+t.stoptime >0 
+<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime1">
+			
+			<![CDATA[
+				 t.StartTime >STR_TO_DATE(#datetime1#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+				
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="datetime2">
+			
+			<![CDATA[
+				 t.StartTime <STR_TO_DATE(#datetime2#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+				</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.route = #selectroute#
+			</isNotEmpty>
+		</dynamic>
+
+) a
+
+left join meta_site_routeavg b  on a.route = b.routeid and a.data_ctf= b.type and a.TimeInterval=b.TimeInterval
+and a.UniqueNum = b.phy_station_id
+) c where c.cha >0
+
+
+		
+	</select>
+	
+	
+	<update id="updateByavg" parameterClass="map">
+		UPDATE meta_site_routeavg SET TimeInterval = #timeinterval# WHERE rowid = #id#
+	</update>
+	
+	
+	
+	
+	<select id="queryroadblocked" parameterClass="map" resultClass="dto">
+	select *from(
+
+	select *,(a.Speed-b.SpeedAVG+1.5*b.SpeedAVG_q) as cha from (
+	SELECT t.Speed,t.Route,CONCAT(t.UniqueNum,t.UniqueNumPro ) as unnum , t.data_ctf,
+
+	t.UniqueNum,t.UniqueNumPro,t.TimeInterval
+
+	FROM bus.meta_site_route t 
+
+	where t.Speed >0
+	
+	<dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime1">
+			
+			<![CDATA[
+				 t.StartTime >STR_TO_DATE(#datetime1#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+				
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="datetime2">
+			
+			<![CDATA[
+				 t.StartTime <STR_TO_DATE(#datetime2#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+				</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.route = #selectroute#
+			</isNotEmpty>
+	</dynamic>
+	group by  t.TimeInterval,unnum 
+	) a , (SELECT t.ROUTEID,t.phy_station_id,t.phy_station_id_Pro,CONCAT(t.phy_station_id,t.phy_station_id_Pro ) as unnum2 ,
+	t.speedavg,t.TimeInterval as TimeInterval2 ,t.type,t.SpeedAVG_q,t.TimeSection
+	FROM bus.meta_site_routeavg t) b where  a.route = b.routeid and a.data_ctf= b.type and a.TimeInterval=b.TimeInterval2
+	and a.unnum=b.unnum2
+	) c where
+	<![CDATA[
+				 c.cha<0
+ 				]]>
+	 
+
+
+
+	</select>
+	
+	
+	
+	
+	
+	<select id="querycommonroadblocked_bak" parameterClass="map" resultClass="dto">
+	select * from (
+		SELECT avg(t.Speed) as speed,t.Route,CONCAT(t.UniqueNum,t.UniqueNumPro ) as unnum , t.data_ctf,
+
+		t.UniqueNum,t.UniqueNumPro,t.TimeInterval
+
+	FROM bus.meta_site_route t 
+
+	where  
+	
+ t.Speed >0
+ 
+ <dynamic >
+			
+			
+			<isNotEmpty prepend="and" property="selectroute">
+				t.route = #selectroute#
+			</isNotEmpty>
+	</dynamic>
+group by  t.TimeInterval,unnum ) a where 
+
+<![CDATA[
+				a.speed<10
+ 				]]>
+
+	</select>
+	
+		<select id="querycommonroadblocked" parameterClass="map" resultClass="dto">
+select * from (	
+SELECT avg(t.Speed) as speed,t.Route,CONCAT(t.UniqueNum,t.UniqueNumPro ) as unnum ,
+ t.data_ctf,    t.UniqueNum,t.UniqueNumPro,t.TimeInterval  
+ FROM bus.meta_site_route t    where      t.Speed >1   
+ 
+        <![CDATA[
+          and t. TimeInterval <32 and t. TimeInterval >26   
+          ]]>       
+    <dynamic >
+			
+			
+			<isNotEmpty prepend="and" property="selectroute">
+				t.route = #selectroute#
+			</isNotEmpty>
+	</dynamic>
+      
+        group by  unnum  ) a   where 
+
+<![CDATA[
+				 a.speed <15
+ 				]]>
+
+	</select>
+	
+	<select id="querySiteName" parameterClass="map" resultClass="dto">
+	
+		SELECT t.station_name as name ,t.phy_station_id as id FROM bus.route_station_view t
+	</select>
+	
+	
+	
+	
+		<select id="getbanciplan" parameterClass="map" resultClass="dto">
+		  
+		SELECT * FROM bus.plan2 t 
+		
+		<dynamic prepend="where">
+			<isNotEmpty prepend="and" property="selectroute">
+				 t.route_id= #selectroute#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="datetime">
+			
+				 t.date= STR_TO_DATE(#datetime#,'%Y-%m-%d') 
+			</isNotEmpty>
+			
+		 </dynamic>
+		order by t.C asc
+	</select>
+	
+	
+	
+	
+		<select id="getbancijiange" parameterClass="map" resultClass="dto">
+		  
+		SELECT t.*, time_format(SEC_TO_TIME(TIME_TO_SEC(t.startTimeNext)-TIME_TO_SEC(t.starttime)),'%H.%i.%s') as tt FROM bus.tb_jiange_0326 t
+		where
+		t.productid in (
+
+	select a.productid from  tb_jiange_0326 a 
+	<dynamic prepend="where">
+			<isNotEmpty prepend="and" property="datetime1">
+			
+			<![CDATA[
+				 a.StartTime >STR_TO_DATE(#datetime1#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+				
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="datetime2">
+			
+			<![CDATA[
+				 a.StartTime <STR_TO_DATE(#datetime2#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+			</isNotEmpty>
+	</dynamic>
+	) 
+		<dynamic >
+			<isNotEmpty prepend="and" property="selectroute">
+				 t.route= #selectroute#
+			</isNotEmpty>
+			
+			
+			<isNotEmpty prepend="and" property="updown_name">
+			
+				 t.upDown= #updown_name#
+			</isNotEmpty>
+			
+		 </dynamic>
+		
+	</select>
+	
+	
+		<select id="countgetbancijiange" parameterClass="map" resultClass="java.lang.Integer">
+		select count(*)
+		 FROM bus.tb_jiange_0326 t
+		where
+		t.productid in (
+
+	select a.productid from  tb_jiange_0326 a 
+	<dynamic prepend="where">
+			<isNotEmpty prepend="and" property="datetime1">
+			
+			<![CDATA[
+				 a.StartTime >STR_TO_DATE(#datetime1#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+				
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="datetime2">
+			
+			<![CDATA[
+				 a.StartTime <STR_TO_DATE(#datetime2#,'%Y-%m-%d %H:%i:%s') 
+ 				]]>
+			</isNotEmpty>
+	</dynamic>
+	) 
+		<dynamic >
+			<isNotEmpty prepend="and" property="selectroute">
+				 t.route= #selectroute#
+			</isNotEmpty>
+			
+			
+			<isNotEmpty prepend="and" property="updown_name">
+			
+				 t.upDown= #updown_name#
+			</isNotEmpty>
+			
+		 </dynamic>
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		<select id="queryRouteMap" parameterClass="map" resultClass="dto">
+		SELECT route_id, baidu_lng as lng, baidu_lat as lat, lanscount, buslane,sxx,distance,gjzyd_licheng as gzlc,station_count as sc,gwszt_count gwzc,altitude,ssgs
+		FROM route_chouxi_view t where baidu_lat is not null
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="route_id">
+				t.route_id = #route_id#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="sxx">
+				t.sxx = #sxx#
+			</isNotEmpty>
+		</dynamic>
+		order by t.id,t.detail_id
+	</select>
+	
+	<select id="queryAllRouteMap" parameterClass="map" resultClass="dto">
+		SELECT route_id, sxx
+		FROM route_master
+		<dynamic >
+		</dynamic>
+	</select>
+	
+	<select id="queryRouteStation" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,station_id as id, baidu_lng as lng, baidu_lat as lat, station_len as len, sjcc, station_type,station_pos as pos,station_station_dis as ssd,station_width as wid,ggw
+		FROM route_station_view t where baidu_lat is not null
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="route_id">
+				t.route_id = #route_id#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="sxx">
+				t.sxx = #sxx#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="queryRouteImg" parameterClass="map" resultClass="dto">
+		SELECT route_id, baidu_lng as lng, baidu_lat as lat, pic_id, lanscount
+		FROM route_chouxi_view t where baidu_lat is not null
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="route_id">
+				t.route_id = #route_id#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="sxx">
+				t.sxx = #sxx#
+			</isNotEmpty>
+			<isNotEmpty prepend="order by abs(baidu_lng-" property="lng">
+				#lng#
+			</isNotEmpty>
+			<isNotEmpty prepend="),abs(baidu_lat-" property="lat">
+				#lat#
+			</isNotEmpty>
+			) LIMIT 0,1
+		</dynamic>
+	</select>
+	
+	<select id="queryStationMap" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as wid,station_len as len,station_type as type,station_pos as pos
+		FROM station_view t 
+		<dynamic >
+			
+			<isNotEmpty prepend="where t.station_name like " property="station_name">
+				'%$station_name$%'
+			</isNotEmpty>
+			order by t.station_name
+		</dynamic>
+	</select>
+	
+	<select id="queryLaKuangStation" parameterClass="map" resultClass="dto">
+		SELECT station_name as name,baidu_lng as lng, baidu_lat as lat,sjcc,route_count as cars,ggw,
+		station_stype_name,station_width as wid,station_len as len,station_type as type,station_pos as pos
+		FROM station_view t 
+		<dynamic >
+			<isNotEmpty prepend="where t.baidu_lng between" property="swlng">
+				#swlng#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="nelng">
+				#nelng#
+			</isNotEmpty>
+			<isNotEmpty prepend="and t.baidu_lat between" property="swlat">
+				#swlat#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="nelat">
+				#nelat#
+			</isNotEmpty>
+			order by t.station_name
+		</dynamic>
+	</select>
+	
+	
+	<select id="querySpeedMap" parameterClass="map" resultClass="dto">
+		SELECT position as pos, positionPro as posp, realspeed 
+		FROM tb_station_speed_new t where t.realspeed>0 
+		<dynamic  >
+			
+			<isNotEmpty prepend="and" property="timesection">
+				t.timesection = #timesection#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="date">
+				t.date = #date#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="queryRoad" parameterClass="map" resultClass="dto">
+		SELECT route_master_id as ri,id_road_detail_id as ii
+		FROM route_station_copy t where
+		<dynamic >
+			<isNotEmpty prepend="" property="pos">
+				t.phy_station_id = #pos#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="posp">
+				t.phy_station_pro = #posp#
+			</isNotEmpty>
+			limit 0,1
+		</dynamic>
+	</select>
+	
+	<select id="queryRoad2" parameterClass="map" resultClass="dto">
+		SELECT sxx,route_master_id as ri,id_road_detail_id as ii
+		FROM route_station_copy t where
+		<dynamic >
+			<isNotEmpty prepend="" property="posp">
+				t.phy_station_id = #posp#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="route_master_id">
+				t.route_master_id = #route_master_id#
+			</isNotEmpty>
+			limit 0,1
+		</dynamic>
+	</select>
+	
+	<select id="queryRouteSpeedMap" parameterClass="map" resultClass="dto">
+		SELECT baidu_lng as lng, baidu_lat as lat,#color# as color
+		FROM route_chouxi_view t where baidu_lat is not null
+		<dynamic >
+			
+			<isNotEmpty prepend="and" property="route_id">
+				t.route_id = #route_id#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="sxx">
+				t.sxx = #sxx#
+			</isNotEmpty>
+			<isNotEmpty prepend="and ( id between " property="id1">
+				#id1#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="id2">
+				#id2#)
+			</isNotEmpty>
+		</dynamic>
+		order by t.id,t.detail_id
+	</select>
+
+	<select id="queryDockTime" parameterClass="map" resultClass="dto">
+		SELECT route_master_id as ri,id_road_detail_id as ii
+		FROM meta_site_route t where
+		<dynamic >
+			<isNotEmpty prepend="" property="pos">
+				t.phy_station_id = #pos#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="posp">
+				t.phy_station_pro = #posp#
+			</isNotEmpty>
+			limit 0,1
+		</dynamic>
+	</select>
+	
+	
+	
+	<select id="queryRouteByCompany" parameterClass="map"
+		resultClass="dto">
+		SELECT id as value, routename as text
+		FROM meta_dept_route t
+		<dynamic prepend="where">
+
+			<isNotEmpty prepend="and" property="companyName">
+				deptid = #companyName#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="queryBusSpaceAvg" parameterClass="map" resultClass="dto">
+		SELECT
+		Route,productid,productidNext,date_format(t.startTime,'%H:%i:%s') as
+		startTime,date_format(t.startTimeNext,'%H:%i:%s') as
+		startTimeNext,date_format(t.JianGe,'%H:%i:%s') as JianGe
+		FROM
+		tb_jiangebanci t where
+		<dynamic>
+			<isNotEmpty prepend="" property="routeid">
+				t.Route = #routeid#
+			</isNotEmpty>
+		</dynamic>
+		and t.startTime between str_to_date(#flat_start#,'%Y-%m-%d %H:%i:%s')
+		and str_to_date(#flat_end#,'%Y-%m-%d %H:%i:%s')
+	</select>
+
+	<select id="countBusSpaceTest" parameterClass="map"
+		resultClass="java.lang.Integer">
+
+		select count(*)
+		from (SELECT *
+
+		FROM tb_banci t where error=0
+		<dynamic>
+
+			<isNotEmpty prepend="and" property="routeid">
+				t.routeid = #routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="upordown_name">
+				t.upordown =
+				#upordown_name#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="date">
+				t.date = #date#
+			</isNotEmpty>
+		</dynamic>
+		)
+	</select>
+
+
+	<select id="queryBusPeakM" parameterClass="map" resultClass="dto">
+		SELECT date_format(p.m_start,'%H:%i:%s') as m_start,
+		date_format(p.m_end,'%H:%i:%s') as m_end, runs,interval_avg_section as
+		avg,inteval_avg as peakavg
+		FROM plan2 p where
+		<dynamic>
+
+			<isNotEmpty prepend="" property="routeid">
+				p.route_id = #routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="date">
+				p.date = #date#
+			</isNotEmpty>
+
+		</dynamic>
+		order by p.C
+
+	</select>
+	<select id="queryBusPeakMCount" parameterClass="map"
+		resultClass="dto">
+		SELECT count(*) as runscount
+		FROM tb_banci t where
+		<dynamic>
+			<isNotEmpty prepend="" property="routeid">
+				t.routeid = #routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="date">
+				t.date = #date#
+			</isNotEmpty>
+
+		</dynamic>
+		and t.time between str_to_date(#m_start#,'%H:%i:%s') and
+		str_to_date(#m_end#,'%H:%i:%s')
+
+	</select>
+
+	<select id="queryBusDay" parameterClass="map" resultClass="dto">
+		SELECT runs_day
+		FROM plan2 p where
+		<dynamic>
+
+			<isNotEmpty prepend="" property="routeid">
+				p.route_id = #routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="date">
+				p.date = #date#
+			</isNotEmpty>
+
+		</dynamic>
+
+
+	</select>
+
+	<select id="queryBusDayCount" parameterClass="map" resultClass="dto">
+		SELECT count(*) as runscount
+		FROM tb_banci t where
+		<dynamic>
+			<isNotEmpty prepend="" property="routeid">
+				t.routeid = #routeid#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="date">
+				t.date = #date#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+
+<select id="querybuspeakviewG_A" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t3.station_name AS phyposition,
+		t1.productid,
+		date_format(t1.starttime,'%Y-%m-%d %H:%i:%s') as
+		starttime,
+		t1.productidNext,
+		date_format(t1.starttimenext,'%Y-%m-%d
+		%H:%i:%s') starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as jiange,
+		SUBSTR(t1.jiange,4,2)+SUBSTR(t1.jiange,7,2)/60 AS jiangex,
+		t2.inteval_avg_g,
+		t2.inteval_avg_p,
+		t2.inteval_vag
+		FROM tb_jiange_0326 t1
+		left join (
+		SELECT
+		t.route_id,t.inteval_avg AS inteval_avg_g,
+		t.f_max_inrerval AS
+		inteval_avg_p,
+		t.inteval_avg * 4 AS inteval_vag
+		FROM
+		plan2 t
+		WHERE 1=1 
+		<![CDATA[
+ 				and  t.inteval_avg<5 
+ 				]]>
+		AND t.c=1
+		GROUP BY t.route_id,t.inteval_avg,t.f_max_inrerval) t2
+		on
+		t1.route=t2.route_id left join station_info t3
+		on
+		t1.phyposition=t3.station_id
+		WHERE 1=1
+		and t2.route_id=#routeid#
+		and
+		t1.starttime between
+		str_to_date(#startdate#,'%Y-%m-%d
+		%H:%i:%s')
+		and
+		str_to_date(#enddate#,'%Y-%m-%d %H:%i:%s') 
+		<![CDATA[
+ 				and t1.jiange>t2.inteval_vag AND t1.jiange>0
+ 				]]>
+
+	</select>
+
+	<select id="querybuspeakviewG_B" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t3.station_name AS phyposition,
+		t1.productid,
+		date_format(t1.starttime,'%Y-%m-%d %H:%i:%s') as
+		starttime,
+		t1.productidNext,
+		date_format(t1.starttimenext,'%Y-%m-%d
+		%H:%i:%s') starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as jiange,
+		SUBSTR(t1.jiange,4,2)+SUBSTR(t1.jiange,7,2)/60 AS jiangex,
+		t2.inteval_avg_g,
+		t2.inteval_avg_p,
+		t2.inteval_vag
+		FROM tb_jiange_0326 t1
+		left join (
+		SELECT
+		t.route_id,t.inteval_avg AS inteval_avg_g,
+		t.f_max_inrerval AS
+		inteval_avg_p,
+		t.inteval_avg * 3 AS inteval_vag
+		FROM
+		plan2 t
+		WHERE 1=1 
+		<![CDATA[
+ 				and  t.inteval_avg>=5 and  t.inteval_avg<10 
+ 				]]>
+		AND t.c=1
+		GROUP BY t.route_id,t.inteval_avg,t.f_max_inrerval) t2
+		on
+		t1.route=t2.route_id left join station_info t3
+		on
+		t1.phyposition=t3.station_id
+		WHERE 1=1
+		and t2.route_id=#routeid#
+		and
+		t1.starttime between
+		str_to_date(#startdate#,'%Y-%m-%d
+		%H:%i:%s')
+		and
+		str_to_date(#enddate#,'%Y-%m-%d %H:%i:%s') 
+		<![CDATA[
+ 				and t1.jiange>t2.inteval_vag AND t1.jiange>0
+ 				]]>
+
+	</select>
+
+	<select id="querybuspeakviewG_C" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t3.station_name AS phyposition,
+		t1.productid,
+		date_format(t1.starttime,'%Y-%m-%d %H:%i:%s') as
+		starttime,
+		t1.productidNext,
+		date_format(t1.starttimenext,'%Y-%m-%d
+		%H:%i:%s') starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as jiange,
+		SUBSTR(t1.jiange,4,2)+SUBSTR(t1.jiange,7,2)/60 AS jiangex,
+		t2.inteval_avg_g,
+		t2.inteval_avg_p,
+		t2.inteval_vag
+		FROM tb_jiange_0326 t1
+		left join (
+		SELECT
+		t.route_id,t.inteval_avg AS inteval_avg_g,
+		t.f_max_inrerval AS
+		inteval_avg_p,
+		t.inteval_avg * 2 AS inteval_vag
+		FROM
+		plan2 t
+		WHERE 1=1 
+		<![CDATA[
+ 				and  t.inteval_avg>=10
+ 				]]>
+		AND t.c=1
+		GROUP BY t.route_id,t.inteval_avg,t.f_max_inrerval) t2
+		on
+		t1.route=t2.route_id left join station_info t3
+		on
+		t1.phyposition=t3.station_id
+		WHERE 1=1
+		and t2.route_id=#routeid#
+		and
+		t1.starttime between
+		str_to_date(#startdate#,'%Y-%m-%d
+		%H:%i:%s')
+		and
+		str_to_date(#enddate#,'%Y-%m-%d %H:%i:%s') 
+		<![CDATA[
+ 				and t1.jiange>t2.inteval_vag AND t1.jiange>0
+ 				]]>
+
+	</select>
+	<select id="querybuspeakviewP_A" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t3.station_name AS phyposition,
+		t1.productid,
+		date_format(t1.starttime,'%Y-%m-%d %H:%i:%s') as
+		starttime,
+		t1.productidNext,
+		date_format(t1.starttimenext,'%Y-%m-%d
+		%H:%i:%s') starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as jiange,
+		SUBSTR(t1.jiange,4,2)+SUBSTR(t1.jiange,7,2)/60 AS jiangex,
+		t2.inteval_avg_g,
+		t2.inteval_avg_p,
+		t2.inteval_vag
+		FROM tb_jiange_0326 t1
+		left join (
+		SELECT
+		t.route_id,
+		t.inteval_avg AS inteval_avg_g,
+		t.f_max_inrerval AS inteval_avg_p,
+		t.f_max_inrerval * 4 AS inteval_vag
+		FROM plan2
+		t
+		WHERE 1=1 
+		<![CDATA[
+ 				and  t.f_max_inrerval<7
+ 				]]>
+		AND t.c=1
+		GROUP BY t.route_id,t.inteval_avg,t.f_max_inrerval) t2
+		on
+		t1.route=t2.route_id left join station_info t3
+		on
+		t1.phyposition=t3.station_id
+		WHERE 1=1
+		and t2.route_id=#routeid#
+		and
+		t1.starttime between
+		str_to_date(#startdate#,'%Y-%m-%d
+		%H:%i:%s')
+		and
+		str_to_date(#enddate#,'%Y-%m-%d %H:%i:%s') 
+		<![CDATA[
+ 				and t1.jiange>t2.inteval_vag AND t1.jiange>0
+ 				]]>
+
+	</select>
+	<select id="querybuspeakviewP_B" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t3.station_name AS phyposition,
+		t1.productid,
+		date_format(t1.starttime,'%Y-%m-%d %H:%i:%s') as
+		starttime,
+		t1.productidNext,
+		date_format(t1.starttimenext,'%Y-%m-%d
+		%H:%i:%s') starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as jiange,
+		SUBSTR(t1.jiange,4,2)+SUBSTR(t1.jiange,7,2)/60 AS jiangex,
+		t2.inteval_avg_g,
+		t2.inteval_avg_p,
+		t2.inteval_vag
+		FROM tb_jiange_0326 t1
+		left join (
+		SELECT
+		t.route_id,
+		t.inteval_avg AS inteval_avg_g,
+		t.f_max_inrerval AS inteval_avg_p,
+		t.f_max_inrerval * 3 AS inteval_vag
+		FROM plan2
+		t
+		WHERE 1=1 
+		<![CDATA[
+ 				and  t.f_max_inrerval>=7 and t.f_max_inrerval<14
+ 				]]>
+		AND t.c=1
+		GROUP BY t.route_id,t.inteval_avg,t.f_max_inrerval) t2
+		on
+		t1.route=t2.route_id left join station_info t3
+		on
+		t1.phyposition=t3.station_id
+		WHERE 1=1
+		and t2.route_id=#routeid#
+		and
+		t1.starttime between
+		str_to_date(#startdate#,'%Y-%m-%d
+		%H:%i:%s')
+		and
+		str_to_date(#enddate#,'%Y-%m-%d %H:%i:%s') 
+		<![CDATA[
+ 				and t1.jiange>t2.inteval_vag AND t1.jiange>0
+ 				]]>
+
+	</select>
+	<select id="querybuspeakviewP_C" parameterClass="map"
+		resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t3.station_name AS phyposition,
+		t1.productid,
+		date_format(t1.starttime,'%Y-%m-%d %H:%i:%s') as
+		starttime,
+		t1.productidNext,
+		date_format(t1.starttimenext,'%Y-%m-%d
+		%H:%i:%s') starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as jiange,
+		SUBSTR(t1.jiange,4,2)+SUBSTR(t1.jiange,7,2)/60 AS jiangex,
+		t2.inteval_avg_g,
+		t2.inteval_avg_p,
+		t2.inteval_vag
+		FROM tb_jiange_0326 t1
+		left join (
+		SELECT
+		t.route_id,
+		t.inteval_avg AS inteval_avg_g,
+		t.f_max_inrerval AS inteval_avg_p,
+		t.f_max_inrerval * 2 AS inteval_vag
+		FROM plan2
+		t
+		WHERE 1=1 
+		<![CDATA[
+ 				and  t.f_max_inrerval>=15
+ 				]]>
+		AND t.c=1
+		GROUP BY t.route_id,t.inteval_avg,t.f_max_inrerval) t2
+		on
+		t1.route=t2.route_id left join station_info t3
+		on
+		t1.phyposition=t3.station_id
+		WHERE 1=1
+		and t2.route_id=#routeid#
+		and
+		t1.starttime between
+		str_to_date(#startdate#,'%Y-%m-%d
+		%H:%i:%s')
+		and
+		str_to_date(#enddate#,'%Y-%m-%d %H:%i:%s') 
+		<![CDATA[
+ 				and t1.jiange>t2.inteval_vag AND t1.jiange>0
+ 				]]>
+
+	</select>
+
+
+	<select id="querybuschuanview" parameterClass="map" resultClass="dto">
+		SELECT
+		t1.route,
+		t1.updown,
+		t1.position,
+		t2.station_name AS phyposition,
+		t1.productid,
+		date_format(MAX(t1.starttime),'%Y-%m-%d %H:%i:%s') as
+		starttime ,
+		t1.productidNext,
+		date_format(MAX(t1.starttimenext),'%Y-%m-%d
+		%H:%i:%s') as
+		starttimenext,
+		date_format(t1.jiange,'%H:%i:%s') as
+		jiange
+		FROM
+		tb_jiange_0326 t1,station_info t2
+		WHERE 1=1
+		AND
+		t1.phyposition=t2.station_id
+		<![CDATA[
+ 				and  t1.jiange<0 
+ 				]]>
+		and t1.route=#routeid# and SUBSTR(t1.starttime,1,10) =
+		str_to_date(#date#,'%Y-%m-%d')
+		group by t1.route,
+		t1.updown,
+		t1.position,
+		t1.phyposition,
+		t1.productid,
+		t1.productidNext,
+		t1.jiange;
+	</select>
+
+	<select id="queryBusSectionRuns" parameterClass="map"
+		resultClass="dto">
+
+		SELECT
+		t.Route,
+		t.position,
+		t2.upordown,
+		t1.station_name,
+		COUNT(1) AS num,
+		t2.section_runs
+		FROM
+		tb_jiange_0326 t LEFT JOIN station_info t1
+		ON
+		t.phyposition=t1.station_id
+		LEFT JOIN plan2 t2
+		ON t.route=t2.route_id
+		AND t.position=t2.section_id
+		WHERE t.Route = '11' 
+<![CDATA[
+  AND SUBSTR(t.startTime,12,8)>'07:00:00'
+  AND SUBSTR(t.startTime,12,8)<'08:00:00'
+ AND t.JianGe > 0 
+ 				]]>
+		AND SUBSTR(t.startTime,1,10)=str_to_date('2014-03-26','%Y-%m-%d')
+		GROUP BY t.Route,
+		t.position,
+		t2.upordown,
+		t1.station_name,
+		t2.section_runs
+	</select>
+
+	
+	
+</sqlMap>

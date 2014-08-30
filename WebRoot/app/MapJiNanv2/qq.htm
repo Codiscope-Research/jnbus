@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>腾讯地图</title>
+<style type="text/css">
+*{
+    margin:0px;
+    padding:0px;
+}
+body, button, input, select, textarea {
+    font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+}
+#info{
+    width:100%;
+    padding-top:3px;
+    overflow:hidden;
+}
+.btn{
+    width:142px;
+}
+</style>
+<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp" type="text/javascript" language="javascript"></script>
+<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&libraries=convertor"></script> 
+
+<script type="text/javascript" language="javascript">
+
+
+</script>
+
+
+<script type="text/javascript" language="javascript">
+	
+	
+	
+	var liststr;
+	var strsplit = "," ;
+	var lists="";
+	var xmlHttp;
+function createXMLHTTP() 
+{ 
+  if(window.XMLHttpRequest) 
+  { 
+    xmlHttp = new XMLHttpRequest();//Mozilla浏览器 
+  } 
+  else if(window.ActiveXObject) 
+  { 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");//IE老版本 
+    } 
+    catch (e) 
+    { } 
+    try 
+    { 
+      xmlHttp = new ActiveXObject("Microsoft.XMLHTTP"); //IE新版本 
+    } 
+    catch (e) 
+    { } 
+    if (!xmlHttp) 
+    { 
+      window.alert("不能创建XMLHttpRequest对象实例!"); 
+      return false; 
+    } 
+  } 
+} 
+
+
+var map;	
+
+var init = function() {
+    var center = new qq.maps.LatLng(36.676649,117.007863);
+    map = new qq.maps.Map(document.getElementById('container'),{
+        center: center,
+        zoom: 13
+    });
+    }
+
+
+</script>
+
+</head>
+<body onload="init()">
+<div style="width:100%;height:600px" id="container"></div>
+<div id="info">
+<div id="info2"></div>
+
+</div>
+    <p>
+        <input id="Button1" type="button" value="button"  onclick="showCustomer();"/></p>
+    <p>
+        <input id="Button2" type="button" value="公交网络" onclick="gjwl();" /></p>
+</body>
+</html>
+<script type="text/javascript" language="javascript">
+
+
+var bx,by,xh
+function showCustomer()
+{
+
+    createXMLHTTP();
+    var mycars = new Array();
+    xmlHttp.onreadystatechange=function()
+    {
+      if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+        var strjwdd=xmlHttp.responseText;
+         mycars=strjwdd.split("*"); //字符分割 
+         addPolyline(mycars,1);//向地图中添       
+//            
+//         setTimeout(function(){station_road_info(rou,fx);},500);
+        }
+    }
+var rou="2";
+var fx="下行";
+    var url="Read_Data.aspx?id=2&route="+rou+"&sxx="+fx;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}  
+
+function gjwl()
+{
+ urlstring="Read_Data.aspx?id=39";
+  var mycars55 = new Array();
+      var mycars66 = new Array();
+    createXMLHTTP();
+    document.getElementById("info").innerHTML="查询开始";
+    xmlHttp.onreadystatechange=function()
+    {
+        if (xmlHttp.readyState==4 && xmlHttp.status==200)
+        {
+            var strjwdd=xmlHttp.responseText;
+             mycars55=strjwdd.split("#"); //字符分割 
+             var ssd=mycars55.length;
+             for(var jj=0;jj<mycars55.length;jj++)
+             {
+             document.getElementById("info").innerHTML="正在加载！"+jj+"/"+mycars55.length;
+             mycars66=mycars55[jj].split("*"); //字符分割 
+             addPolyline_route_mul_ztcx(mycars66);
+             }
+        }
+    }
+    var url=urlstring;
+    xmlHttp.open("post",url,true);
+    xmlHttp.send(null);
+}
+
+function addPolyline_route_mul_ztcx(mycars77)
+{       
+	var points = [];
+	var p1;
+	var p2;
+	 var line;
+	 		var pointss=[];
+	for(var j=1;j<mycars77.length;j++)
+	{
+		p1 = mycars77[j].split("|")[2];
+		p2 = mycars77[j].split("|")[1];
+		points[j-1]=[p1,p2];
+
+	 }	
+qq.maps.convertor.translate(points, 3, function(res){
+pointss=res;
+document.getElementById("info").innerHTML="坐标转换完毕！";
+        line = new qq.maps.Polyline({
+        path: pointss,
+        strokeColor: '#000000',
+        strokeWeight: 5,
+        editable:false,
+        map: map
+        });
+         document.getElementById("info").innerHTML="线段加载完毕，正在显示！";
+    });
+	}
+
+
+
+
+function addPolyline(mycars,ys)
+{
+
+       
+	var points = [];
+	var p1;
+	var p2;
+	var ii=0;
+	var buslan;
+	var line;
+	var line2;
+		var pointss=[];
+	for(var j=0;j<mycars.length;j++)
+	{
+	p1 = mycars[j].split("|")[1];
+	p2 = mycars[j].split("|")[0];
+//	points[j]=new qq.maps.LatLng(p1,p2);
+	points[j]=[p1,p2];
+	}
+	
+		    //转换百度坐标为腾讯坐标
+    qq.maps.convertor.translate(points, 3, function(res){
+//    alert(res.length);
+pointss=res;
+        line = new qq.maps.Polyline({
+        path: pointss,
+        strokeColor: '#000000',
+        strokeWeight: 5,
+        editable:true,
+        map: map
+        });
+    });
+	
+
+}
+
+</script>

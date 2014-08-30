@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="BusNew">
+	<typeAlias alias="dto" type="org.g4studio.core.metatype.impl.BaseDto" />
+	<typeAlias alias="catalogVO" type="org.g4studio.demo.dao.vo.CatalogVO" />
+	<typeAlias alias="userVo" type="org.g4studio.system.admin.web.tag.vo.UserVo"/>
+
+	
+	<!-- 定义出入参对象映射:测试游标 -->
+	<parameterMap id="prcdto_cur" class="map">
+		<parameter property="prm_Xm" jdbcType="VARCHAR" javaType="java.lang.String" mode="IN" /> <!-- 入参 -->
+		<parameter property="cur_list"  jdbcType="ORACLECURSOR" javaType="java.sql.ResultSet"  mode="OUT" resultMap="cur_dto"/>
+		<parameter property="appCode" jdbcType="VARCHAR" javaType="java.lang.String" mode="OUT" /> <!-- 执行代码 -->
+		<parameter property="errMsg" jdbcType="VARCHAR" javaType="java.lang.String" mode="OUT" /> <!-- 出错信息 -->
+	</parameterMap>
+	<resultMap id="cur_dto" class="dto">
+		<result column="xm" property="xm" jdbcType="VARCHAR"/>
+		<result column="fyze" property="fyze" jdbcType="DECIMAL"/>
+	</resultMap>
+	
+<select id="countbancizhixing" parameterClass="map" resultClass="java.lang.Integer">
+	
+	SELECT count(*) FROM
+	 bus.tb_banci t where (t.error =0 or t.error=3) 
+	 <dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date =#datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid =#selectroute#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="updown_name">
+				t.upordown =#updown_name#
+			</isNotEmpty>
+		</dynamic>
+	
+
+	</select>
+	
+	<select id="querybancizhixing" parameterClass="map" resultClass="dto">
+		SELECT t.routeid,t.productid,t.stationnum,
+
+time_format(t.time,'%H:%i:%s') as time,t.date,t.upordown,t.endstation,t.isQuJian  FROM
+	 bus.tb_banci t where (t.error =0 or t.error=3) 
+		 <dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date =#datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid =#selectroute#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="updown_name">
+				t.upordown =#updown_name#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	
+		<select id="querybancizhixingorderBytime" parameterClass="map" resultClass="dto">
+		SELECT t.routeid,t.productid,t.stationnum,
+
+time_format(t.time,'%H:%i:%s') as time,t.date,t.upordown,t.endstation,t.isQuJian  FROM
+	 bus.tb_banci t where (t.error =0 or t.error=3) 
+		 <dynamic >
+			
+			<isNotEmpty prepend="and" property="datetime">
+				t.date =#datetime#
+			</isNotEmpty>
+			<isNotEmpty prepend="and" property="selectroute">
+				t.routeid =#selectroute#
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="and" property="updown_name">
+				t.upordown =#updown_name#
+			</isNotEmpty>
+		</dynamic>
+		
+		order by t.time asc
+	</select>
+	
+	
+</sqlMap>

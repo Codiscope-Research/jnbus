@@ -1,0 +1,51 @@
+/* CSSTidy 1.3: Tue, 24 May 2011 00:35:46 -0600 */
+#cityinfoWin .hot {
+background-image:url(../images/1.png);
+background-repeat:no-repeat;
+background-color:Transparent;
+}
+
+#cityinfoWin .bnFill {
+border-left:1px solid #ddd;
+border-right:1px solid #ddd;
+}
+
+#cityinfoWin b {
+border-color:#ddd;
+background:#ddd;
+}
+
+#cityinfoWin b b {
+border:0 none;
+background:#fff;
+}
+
+#cityinfoWin ul {
+width:100%;
+height:200px;
+overflow:auto;
+background-color:#fff;
+}
+
+#cityinfoWin ul li {
+margin:5px 0 0 5px;
+}
+
+#cityinfoWin .cityText {
+margin-left:5px;
+text-decoration:underline;
+cursor:pointer;
+color:#6e9ac6;
+}
+
+#cityinfoWin .clt,#cityinfoWin .hot {
+width:15px;
+float:left;
+text-align:center;
+}
+
+#cityinfoWin .hot {
+height:10px;
+margin-top:2px;
+background-position:-17px -139px;
+}

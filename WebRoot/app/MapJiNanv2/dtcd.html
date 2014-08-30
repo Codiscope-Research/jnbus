@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>伸缩的菜单-/</title>
+<style>
+body{
+background-color:#1962F4;
+}
+#navigation {
+width:200px;
+font-family:Arial;
+}
+#navigation > ul {
+list-style-type:none;
+margin:0px;
+padding:0px;
+}
+#navigation > ul > li {
+border-bottom:1px solid #ED9F9F;
+}
+#navigation > ul > li > a{
+display:block;
+padding:5px 5px 5px 0.5em;
+text-decoration:none;
+border-left:12px solid #711515;
+border-right:1px solid #711515;
+}
+#navigation > ul > li > a:link, #navigation > ul > li > a:visited{
+background-color:#c11136;
+color:#FFFFFF;
+}
+#navigation > ul > li > a:hover{
+	background-color:#990020;
+	color:#ffff00;
+}
+
+#navigation ul li ul{
+	list-style-type:none;
+	margin:0px;
+	padding:0px 0px 0px 0px;
+}
+#navigation ul li ul li{
+	border-top:1px solid #ED9F9F;
+}
+#navigation ul li ul li a{
+	display:block;
+	padding:3px 3px 3px 0.5em;
+	text-decoration:none;
+	border-left:28px solid #a71f1f;
+	border-right:1px solid #711515;
+}
+#navigation ul li ul li a:link, #navigation ul li ul li a:visited{
+	background-color:#e85070;
+	color:#FFFFFF;
+}
+#navigation ul li ul li a:hover{
+	background-color:#c2425d;
+	color:#ffff00;
+}
+#navigation ul li ul.myHide{
+	display:none;
+}
+#navigation ul li ul.myShow{
+	display:block;
+}
+
+</style>
+<script language="javascript">
+function change(){
+
+
+var oUl = document.getElementById("listUL");
+	var aLi = oUl.childNodes;	//子元素
+	var oA;
+	for(var i=0;i<aLi.length;i++){
+		//如果子元素为li，且这个li有子菜单ul
+		if(aLi[i].tagName == "LI" && aLi[i].getElementsByTagName("ul").length){
+			oA = aLi[i].firstChild;	//找到超链接
+			var oSecondDiv = oA.parentNode.getElementsByTagName("ul")[0];
+				if(oSecondDiv.className == "myShow")
+		oSecondDiv.className = "myHide";
+		}
+	}
+
+	//通过父元素li，找到兄弟元素ul
+	var oSecondDiv = this.parentNode.getElementsByTagName("ul")[0];
+	//CSS交替更换来实现显、隐
+	if(oSecondDiv.className == "myHide")
+		oSecondDiv.className = "myShow";
+	else
+		oSecondDiv.className = "myHide";
+}
+window.onload = function(){
+	var oUl = document.getElementById("listUL");
+	var aLi = oUl.childNodes;	//子元素
+	var oA;
+	for(var i=0;i<aLi.length;i++){
+		//如果子元素为li，且这个li有子菜单ul
+		if(aLi[i].tagName == "LI" && aLi[i].getElementsByTagName("ul").length){
+			oA = aLi[i].firstChild;	//找到超链接
+			oA.onclick = change;	//动态添加点击函数
+		}
+	}
+}
+function xx()
+{
+	alert("nihao");
+}
+function yy()
+{
+	alert("yy");
+}
+</script>
+</head>
+<body>
+<div id="navigation">
+	<ul id="listUL">
+		<li><a href="#">Home</a></li>
+		<li><a href="#">News</a>
+        	<ul class="myHide">
+            	<li><a href="#">Lastest News</a></li>
+                <li><a href="#">All News</a></li>
+            </ul>
+        </li>
+		<li ><a href="#">Sports</a>
+        	<ul class="myHide">
+            	<li><a href="/">Basketball</a></li>
+                <li><a href="#">Football</a></li>
+                <li><a href="#">Volleyball</a></li>
+            </ul>        
+        </li>
+		<li><a href="#">Weather</a>
+        	<ul class="myHide">
+            	<li><a href="#">Today's Weather</a></li>
+                <li><a href="#">Forecast</a></li>
+            </ul>
+        </li>
+		<li><a href="#">Contact Me</a></li>
+	</ul>
+</div>
+</body>
+</html>
